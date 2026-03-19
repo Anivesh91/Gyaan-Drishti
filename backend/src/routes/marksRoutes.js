@@ -1,0 +1,10 @@
+const express = require("express");
+const r = express.Router();
+const c = require("../controllers/marksController");
+const { protect, authorize } = require("../middleware/auth");
+r.post("/bulk", protect, authorize("teacher"), c.bulkEnterMarks);
+r.get("/teacher", protect, authorize("teacher"), c.getMarksTeacher);
+r.get("/summary", protect, authorize("teacher"), c.getClassSummary);
+r.get("/my", protect, authorize("student"), c.getMyMarks);
+r.put("/:id", protect, authorize("teacher"), c.updateMarks);
+module.exports = r;

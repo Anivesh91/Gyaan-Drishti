@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Anivesh Sikarwar",
+    "email": "aniveshsikarwar@gmail.com",
+    "password": "$2a$10$3ygGn6hXSpw7JQgN4gQ1HOWWZ6/LU4gUAOi9HpFI4CBNbw2Jje/Py",
+    "role": "admin",
+    "rollNumber": "",
+    "subject": "",
+    "phone": "9202185737",
+    "isActive": true,
+    "lastLogin": "2026-03-10T11:32:35.742Z",
+    "resetToken": null,
+    "resetTokenExpiry": null,
+    "_id": "31661c57-b31e-4f26-abde-9934d09431b1",
+    "createdAt": "2026-03-07T17:38:21.394Z",
+    "updatedAt": "2026-03-10T11:32:35.743Z"
+  },
+  {
+    "name": "aditya",
+    "email": "adi@gmail.com",
+    "password": "$2a$10$ZUTnjg/QBP4NwnoNSHHZ9O/fOM6gcLHLLpWORS39I038pAs7XY24q",
+    "role": "teacher",
+    "rollNumber": "",
+    "subject": "maths",
+    "phone": "9811441212",
+    "isActive": true,
+    "_id": "7787440a-892f-4c20-9768-cf76569f6d1d",
+    "createdAt": "2026-03-09T16:58:45.156Z",
+    "updatedAt": "2026-03-09T16:59:07.348Z",
+    "lastLogin": "2026-03-09T16:59:07.347Z"
+  }
+]
