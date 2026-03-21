@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "studentId": "e6cf2ed3-66ad-4bd9-a18d-ec03b3e2e565",
+    "subject": "maths",
+    "examType": "midterm",
+    "teacherId": "908bba67-604c-40ec-8f21-26bd658fe4ba",
+    "marks": 21,
+    "maxMarks": 100,
+    "_id": "88ba9d81-bca4-4a00-aad7-0052c2a6ea91",
+    "createdAt": "2026-03-21T18:43:57.312Z",
+    "updatedAt": "2026-03-21T18:43:57.312Z"
+  }
+]
