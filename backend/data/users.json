@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "name": "Anivesh",
+    "email": "aniveshsikarwar@gmail.com",
+    "password": "$2a$10$8/IBMmHqsDRXIDGMnobY0OsYQtHZq3amIHQkcFSULnc0o6FK6IlW.",
+    "role": "admin",
+    "rollNumber": "",
+    "subject": "",
+    "phone": "9202185737",
+    "isActive": true,
+    "lastLogin": "2026-03-21T18:40:36.017Z",
+    "resetToken": null,
+    "resetTokenExpiry": null,
+    "_id": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
+    "createdAt": "2026-03-21T18:37:04.894Z",
+    "updatedAt": "2026-03-21T18:40:36.018Z"
+  },
+  {
+    "name": "Ankush Gurjwar",
+    "email": "gurjwara@gmail.com",
+    "password": "$2a$10$LeyJAYxpyXkC21xZ//LGteJN.uuBmnitfSeDxBVmMiLd5MT87evr6",
+    "role": "student",
+    "rollNumber": "0801CS241017",
+    "subject": "",
+    "phone": "8349952912",
+    "isActive": true,
+    "lastLogin": "2026-03-21T18:41:24.557Z",
+    "resetToken": null,
+    "resetTokenExpiry": null,
+    "_id": "e6cf2ed3-66ad-4bd9-a18d-ec03b3e2e565",
+    "createdAt": "2026-03-21T18:41:02.041Z",
+    "updatedAt": "2026-03-21T18:41:24.557Z"
+  },
+  {
+    "name": "Aditya Koul",
+    "email": "adityakoul2006@gmail.com",
+    "password": "$2a$10$LMQh51I1N1smxuqd2pCjp./V9.380I6YD/RjsOGYgecS1euiTWgg.",
+    "role": "teacher",
+    "rollNumber": "",
+    "subject": "maths",
+    "phone": "7780935470",
+    "isActive": true,
+    "lastLogin": "2026-03-21T18:43:40.958Z",
+    "resetToken": null,
+    "resetTokenExpiry": null,
+    "_id": "908bba67-604c-40ec-8f21-26bd658fe4ba",
+    "createdAt": "2026-03-21T18:43:30.202Z",
+    "updatedAt": "2026-03-21T18:43:40.958Z"
+  },
+  {
+    "name": "abhishek baish",
+    "email": "abhishekbaish220@gmail.com",
+    "password": "$2a$10$ARy5kNGeHpOE0Pkf4vE6DOmWmAPHD6JMmcqAG0UKMV7j12sMNGSFm",
+    "role": "student",
+    "rollNumber": "0801cs241004",
+    "subject": "",
+    "phone": "77718583897",
+    "isActive": true,
+    "lastLogin": "2026-03-21T18:54:32.752Z",
+    "resetToken": null,
+    "resetTokenExpiry": null,
+    "_id": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "createdAt": "2026-03-21T18:54:16.561Z",
+    "updatedAt": "2026-03-21T18:54:32.753Z"
+  }
+]
