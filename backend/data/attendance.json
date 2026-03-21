@@ -1,0 +1,12 @@
+[
+  {
+    "studentId": "1bf7cd9a-03b5-46ab-9d91-33abafcf9386",
+    "subject": "Maths",
+    "date": "2026-03-21",
+    "teacherId": "8bb72d03-3e3c-42a9-91d1-8b546e7b9f52",
+    "status": "absent",
+    "_id": "5b5c90b2-7e42-4ece-b070-3359a1251644",
+    "createdAt": "2026-03-21T18:01:42.273Z",
+    "updatedAt": "2026-03-21T18:01:42.273Z"
+  }
+]

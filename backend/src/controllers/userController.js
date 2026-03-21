@@ -21,7 +21,15 @@ exports.getUser = (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password, role, rollNumber, subject, phone } = req.body;
+    if (!name || !email || !password) return res.status(400).json({ success: false, message: "Fill all required fields." });
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already exists." });
+
+    // Only one admin allowed in the entire system
+    if (role === "admin") {
+      const existingAdmin = db.findOne("users", { role: "admin" });
+      if (existingAdmin) return res.status(400).json({ success: false, message: "An admin already exists. Only one admin is allowed in the system." });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const user = db.create("users", { name, email, password: hashed, role, rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true });
     res.status(201).json({ success: true, message: "User created!", user: safe(user) });

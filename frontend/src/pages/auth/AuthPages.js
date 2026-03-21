@@ -96,7 +96,6 @@ export const Register = () => {
               <select style={authCard.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
-                <option value="admin">Admin</option>
               </select>
             </div>
           </div>
