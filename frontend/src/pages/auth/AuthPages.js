@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import API from "../../utils/api";
 
 const authCard = {
   container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", padding: "20px" },
@@ -64,8 +65,16 @@ export const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", role: "student", rollNumber: "", subject: "", phone: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [adminExists, setAdminExists] = useState(true); // assume true until checked
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if admin already exists to decide whether to show Admin option
+    API.get("/auth/check-admin")
+      .then(r => setAdminExists(r.data.adminExists))
+      .catch(() => setAdminExists(true)); // if error, be safe and hide admin option
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -96,7 +105,14 @@ export const Register = () => {
               <select style={authCard.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                {/* Admin option only shown if no admin exists yet (first-time setup) */}
+                {!adminExists && <option value="admin">Admin (First Setup)</option>}
               </select>
+              {!adminExists && (
+                <p style={{ fontSize: "11px", color: "#ed8936", marginTop: "-10px", marginBottom: "10px", fontWeight: "600" }}>
+                  ⚠️ No admin found. You can register as the system admin.
+                </p>
+              )}
             </div>
           </div>
           <label style={authCard.label}>Email *</label>
