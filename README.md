@@ -1,7 +1,7 @@
 # 🎓 GYAAN DRISHTI
 ## (NO MONGODB VERSION — Seedha chalega!)
 
----
+----
 
 ## ✅ Kya Chahiye
 - Node.js (nodejs.org se download karo)
