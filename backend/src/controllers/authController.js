@@ -11,11 +11,25 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, role, rollNumber, subject, phone } = req.body;
     if (!name || !email || !password) return res.status(400).json({ success: false, message: "Fill all required fields." });
+
+    // Admin registration only allowed if NO admin exists yet (first-time setup)
+    if (role === "admin") {
+      const existingAdmin = db.findOne("users", { role: "admin" });
+      if (existingAdmin) return res.status(403).json({ success: false, message: "An admin already exists. Only one admin is allowed in the system." });
+    }
+
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already registered." });
     const hashed = await bcrypt.hash(password, 10);
-    const user = db.create("users", { name, email, password: hashed, role: role || "student", rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true, lastLogin: null, resetToken: null, resetTokenExpiry: null });
+    const assignedRole = ["student", "teacher", "admin"].includes(role) ? role : "student";
+    const user = db.create("users", { name, email, password: hashed, role: assignedRole, rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true, lastLogin: null, resetToken: null, resetTokenExpiry: null });
     res.status(201).json({ success: true, message: "Registered successfully!", token: generateToken(user._id), user: safeUser(user) });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+};
+
+// Public endpoint — lets frontend know if admin slot is taken
+exports.checkAdminExists = (req, res) => {
+  const adminExists = !!db.findOne("users", { role: "admin" });
+  res.status(200).json({ success: true, adminExists });
 };
 
 exports.login = async (req, res) => {

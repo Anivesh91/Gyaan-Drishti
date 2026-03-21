@@ -130,15 +130,26 @@ export const AddUser = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "student", rollNumber: "", subject: "", phone: "" });
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [adminExists, setAdminExists] = useState(false);
+
+  useEffect(() => {
+    // Check if an admin already exists
+    API.get("/users?role=admin").then(r => {
+      const admins = (r.data.users || []).filter(u => u.isActive);
+      setAdminExists(admins.length > 0);
+    }).catch(() => {});
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) { setErr("Fill all required fields."); return; }
+    if (form.role === "admin" && adminExists) { setErr("An admin already exists. Only one admin is allowed."); return; }
     try {
       await API.post("/users", form);
       setMsg(`${form.role} "${form.name}" created successfully!`);
       setErr("");
       setForm({ name: "", email: "", password: "", role: "student", rollNumber: "", subject: "", phone: "" });
+      if (form.role === "admin") setAdminExists(true);
     } catch (er) { setErr(er.response?.data?.message || "Error creating user."); }
   };
 
@@ -158,11 +169,12 @@ export const AddUser = () => {
             </div>
             <div>
               <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Role *</label>
-              <select style={inp} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+              <select style={{ ...inp, opacity: form.role === "admin" && adminExists ? 0.6 : 1 }} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
-                <option value="admin">Admin</option>
+                <option value="admin" disabled={adminExists}>Admin {adminExists ? "(already exists)" : ""}</option>
               </select>
+              {adminExists && <p style={{ fontSize: "11px", color: "#e53e3e", marginTop: "-10px", marginBottom: "10px" }}>⚠️ Only one admin allowed. Admin slot is taken.</p>}
             </div>
           </div>
           <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Email *</label>
