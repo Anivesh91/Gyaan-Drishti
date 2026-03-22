@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "studentId": "e6cf2ed3-66ad-4bd9-a18d-ec03b3e2e565",
+    "subject": "Discrete",
+    "date": "2026-03-23",
+    "teacherId": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "status": "absent",
+    "_id": "01e28cb5-f475-4349-a2b6-7d1706c51870",
+    "createdAt": "2026-03-22T20:42:12.304Z",
+    "updatedAt": "2026-03-22T20:42:46.187Z"
+  },
+  {
+    "studentId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "subject": "Discrete",
+    "date": "2026-03-23",
+    "teacherId": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "status": "present",
+    "_id": "ba40ad35-b230-49e3-baf1-4e5b271a2de5",
+    "createdAt": "2026-03-22T20:42:12.307Z",
+    "updatedAt": "2026-03-22T20:42:46.211Z"
+  },
+  {
+    "studentId": "e556fa41-2b2b-4caf-9280-4969f6aea774",
+    "subject": "Discrete",
+    "date": "2026-03-23",
+    "teacherId": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "status": "present",
+    "_id": "3a18994f-0e91-4e19-974c-e367704f769b",
+    "createdAt": "2026-03-22T20:42:12.311Z",
+    "updatedAt": "2026-03-22T20:42:46.213Z"
+  },
+  {
+    "studentId": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "subject": "Discrete",
+    "date": "2026-03-23",
+    "teacherId": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "status": "present",
+    "_id": "35869bf7-9e06-4902-ad1f-70b16fa445dd",
+    "createdAt": "2026-03-22T20:42:12.313Z",
+    "updatedAt": "2026-03-22T20:42:46.217Z"
+  }
+]

@@ -5,6 +5,9 @@ import API from "../../utils/api";
 // Admin Dashboard
 export const AdminDashboard = () => {
   const [stats, setStats] = useState({ students: 0, teachers: 0, admins: 0, total: 0 });
+  const [requireApproval, setRequireApproval] = useState(false);
+  const [toggleMsg, setToggleMsg] = useState("");
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     API.get("/users").then(r => {
@@ -16,12 +19,48 @@ export const AdminDashboard = () => {
         total: users.length,
       });
     });
+    // Load current approval setting
+    API.get("/settings").then(r => setRequireApproval(r.data.settings?.requireApproval || false)).catch(() => {});
   }, []);
+
+  const toggleApproval = async () => {
+    setToggling(true); setToggleMsg("");
+    try {
+      const res = await API.put("/settings", { requireApproval: !requireApproval });
+      setRequireApproval(!requireApproval);
+      setToggleMsg(res.data.message);
+      setTimeout(() => setToggleMsg(""), 3000);
+    } catch { setToggleMsg("Failed to update setting."); }
+    setToggling(false);
+  };
 
   return (
     <Layout>
       <h1 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 4px" }}>Admin Panel 🛠️</h1>
       <p style={{ color: "#888", margin: "0 0 24px" }}>System overview and management</p>
+
+      {/* Registration Mode Toggle */}
+      <div style={{ background: "white", borderRadius: "12px", padding: "20px", marginBottom: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h3 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700" }}>🔐 Registration Mode</h3>
+          <p style={{ margin: 0, fontSize: "13px", color: "#666" }}>
+            {requireApproval
+              ? "Approval Mode — new registrations need your approval before login"
+              : "Open Mode — new registrations can login immediately"}
+          </p>
+          {toggleMsg && <p style={{ margin: "6px 0 0", fontSize: "13px", fontWeight: "600", color: requireApproval ? "#ed8936" : "#48bb78" }}>{toggleMsg}</p>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "700", color: requireApproval ? "#ed8936" : "#48bb78" }}>
+            {requireApproval ? "⏳ Approval Required" : "✅ Open Registration"}
+          </span>
+          {/* Toggle Switch */}
+          <div onClick={toggling ? null : toggleApproval} style={{ width: "52px", height: "28px", borderRadius: "14px", background: requireApproval ? "#ed8936" : "#48bb78", cursor: toggling ? "not-allowed" : "pointer", position: "relative", transition: "background 0.3s", opacity: toggling ? 0.7 : 1 }}>
+            <div style={{ position: "absolute", top: "3px", left: requireApproval ? "27px" : "3px", width: "22px", height: "22px", background: "white", borderRadius: "50%", transition: "left 0.3s", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} />
+          </div>
+        </div>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "16px", marginBottom: "28px" }}>
         {[["Total Users", stats.total, "#667eea", "👥"], ["Students", stats.students, "#48bb78", "👨‍🎓"], ["Teachers", stats.teachers, "#ed8936", "👨‍🏫"], ["Admins", stats.admins, "#764ba2", "🛡️"]].map(([t, v, c, i]) => (
           <div key={t} style={{ background: "white", borderRadius: "12px", padding: "20px", borderLeft: `4px solid ${c}`, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>

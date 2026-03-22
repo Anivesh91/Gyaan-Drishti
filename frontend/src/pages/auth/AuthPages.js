@@ -97,10 +97,10 @@ export const Register = () => {
     const res = await register(form);
     if (res.success) {
       if (res.pending) {
-        // Non-admin: show pending message, don't redirect to login yet
+        // Approval mode ON — show pending message
         setSuccess("pending");
       } else {
-        // Admin registered: go to login
+        // Open mode or admin — go to login directly
         setSuccess("Registered successfully! Redirecting to login...");
         setTimeout(() => navigate("/login"), 1500);
       }

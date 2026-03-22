@@ -19,6 +19,7 @@ app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/attendance", require("./src/routes/attendanceRoutes"));
 app.use("/api/marks", require("./src/routes/marksRoutes"));
 app.use("/api/notifications", require("./src/routes/notificationRoutes"));
+app.use("/api/settings", require("./src/routes/settingsRoutes"));
 
 app.get("/", (req, res) => res.json({ success: true, message: "GYAAN DRISHTI API Running! 🚀 (No MongoDB needed!)" }));
 app.use((req, res) => res.status(404).json({ success: false, message: "Route not found" }));

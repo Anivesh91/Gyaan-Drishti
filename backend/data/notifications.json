@@ -528,5 +528,38 @@
     "_id": "5dfbd5bb-6f5f-4a96-b77e-ebe805d5b2af",
     "createdAt": "2026-03-22T19:29:20.649Z",
     "updatedAt": "2026-03-22T19:29:20.649Z"
+  },
+  {
+    "userId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "title": "Low Attendance Alert ⚠️",
+    "message": "Your attendance in Discrete is 0.0%. Minimum required is 75%.",
+    "type": "attendance",
+    "isRead": false,
+    "createdById": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "_id": "00e06e85-d77e-4674-8bba-c6b9ef178e23",
+    "createdAt": "2026-03-22T20:42:12.310Z",
+    "updatedAt": "2026-03-22T20:42:12.310Z"
+  },
+  {
+    "userId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "title": "Low Attendance Alert ⚠️",
+    "message": "Your attendance in Discrete is 0.0%. Minimum required is 75%.",
+    "type": "attendance",
+    "isRead": false,
+    "createdById": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "_id": "0e430f3e-ba60-4043-b04c-a5c3369acb61",
+    "createdAt": "2026-03-22T20:42:15.699Z",
+    "updatedAt": "2026-03-22T20:42:15.699Z"
+  },
+  {
+    "userId": "e6cf2ed3-66ad-4bd9-a18d-ec03b3e2e565",
+    "title": "Low Attendance Alert ⚠️",
+    "message": "Your attendance in Discrete is 0.0%. Minimum required is 75%.",
+    "type": "attendance",
+    "isRead": false,
+    "createdById": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "_id": "77226baf-d4bc-4e61-a0e8-1a36ff6e126e",
+    "createdAt": "2026-03-22T20:42:46.209Z",
+    "updatedAt": "2026-03-22T20:42:46.209Z"
   }
 ]

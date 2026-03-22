@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const db = require("../db");
+const { readSettings } = require("./settingsController");
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 const safeUser = (u) => { const { password, ...rest } = u; return rest; };
@@ -34,8 +35,10 @@ exports.register = async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
     const assignedRole = ["student", "teacher", "admin"].includes(role) ? role : "student";
 
-    // Admin registers instantly approved, others need admin approval
-    const isApproved = assignedRole === "admin";
+    // Admin always approved instantly
+    // Others: check system setting — if requireApproval is ON, set false; else auto-approve
+    const settings = readSettings();
+    const isApproved = assignedRole === "admin" ? true : !settings.requireApproval;
 
     const user = db.create("users", {
       name, email, password: hashed, role: assignedRole,
@@ -44,7 +47,7 @@ exports.register = async (req, res) => {
       lastLogin: null, resetToken: null, resetTokenExpiry: null
     });
 
-    // Notify admin about new registration (only for non-admin registrations)
+    // If approval required — notify admin and return pending response
     if (!isApproved) {
       const admin = db.findOne("users", { role: "admin" });
       if (admin) {
@@ -65,8 +68,9 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Admin: return token directly
-    res.status(201).json({ success: true, message: "Admin registered successfully!", token: generateToken(user._id), user: safeUser(user) });
+    // Open mode or admin — return token directly, login immediately
+    const msg = assignedRole === "admin" ? "Admin registered successfully!" : "Registered successfully! You can now login.";
+    res.status(201).json({ success: true, pending: false, message: msg, token: generateToken(user._id), user: safeUser(user) });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
@@ -84,8 +88,9 @@ exports.login = async (req, res) => {
     if (!user) return res.status(401).json({ success: false, message: "Invalid email or password." });
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account deactivated. Contact admin." });
 
-    // Approval check — admin is always approved
-    if (user.role !== "admin" && !user.isApproved) {
+    // Approval check — only block if isApproved is explicitly false
+    // (undefined means old user registered before approval system — allow them)
+    if (user.role !== "admin" && user.isApproved === false) {
       return res.status(403).json({
         success: false,
         pending: true,
