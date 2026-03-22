@@ -8,12 +8,12 @@
     "subject": "",
     "phone": "9202185737",
     "isActive": true,
-    "lastLogin": "2026-03-21T18:40:36.017Z",
+    "lastLogin": "2026-03-22T19:05:07.257Z",
     "resetToken": null,
     "resetTokenExpiry": null,
     "_id": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
     "createdAt": "2026-03-21T18:37:04.894Z",
-    "updatedAt": "2026-03-21T18:40:36.018Z"
+    "updatedAt": "2026-03-22T19:05:07.257Z"
   },
   {
     "name": "Ankush Gurjwar",
@@ -62,5 +62,32 @@
     "_id": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
     "createdAt": "2026-03-21T18:54:16.561Z",
     "updatedAt": "2026-03-21T18:54:32.753Z"
+  },
+  {
+    "name": "Aashish chanchalani",
+    "email": "aashish@gmail.com",
+    "password": "$2a$10$avt5uY3s8qcuT5CqbKACOeHvpe6JK9K4LM1RsdhOXJ8ucwLJfJEJa",
+    "role": "student",
+    "rollNumber": "0801cs241056",
+    "subject": "",
+    "phone": "8723467245",
+    "isActive": true,
+    "_id": "e556fa41-2b2b-4caf-9280-4969f6aea774",
+    "createdAt": "2026-03-22T19:01:44.023Z",
+    "updatedAt": "2026-03-22T19:03:51.986Z",
+    "lastLogin": "2026-03-22T19:03:51.986Z"
+  },
+  {
+    "name": "Naman",
+    "email": "naman@gmail.com",
+    "password": "$2a$10$SaEmCpX7OWB0.eYypskDG.Z/aEvlmHNWGd7NTnWph7iGKmophY3uu",
+    "role": "teacher",
+    "rollNumber": "",
+    "subject": "Discrete",
+    "phone": "9173751623",
+    "isActive": true,
+    "_id": "f476e702-de87-43b3-813b-24e2ef4b2764",
+    "createdAt": "2026-03-22T19:02:36.792Z",
+    "updatedAt": "2026-03-22T19:02:36.792Z"
   }
 ]

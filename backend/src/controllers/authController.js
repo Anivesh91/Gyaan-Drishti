@@ -4,7 +4,6 @@ const crypto = require("crypto");
 const db = require("../db");
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
-
 const safeUser = (u) => { const { password, ...rest } = u; return rest; };
 
 exports.register = async (req, res) => {
@@ -12,17 +11,50 @@ exports.register = async (req, res) => {
     const { name, email, password, role, rollNumber, subject, phone } = req.body;
     if (!name || !email || !password) return res.status(400).json({ success: false, message: "Fill all required fields." });
 
-    // Admin registration only allowed if NO admin exists yet (first-time setup)
+    // Admin: only allowed if no admin exists (first-time setup), and skip approval
     if (role === "admin") {
       const existingAdmin = db.findOne("users", { role: "admin" });
       if (existingAdmin) return res.status(403).json({ success: false, message: "An admin already exists. Only one admin is allowed in the system." });
     }
 
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already registered." });
+
     const hashed = await bcrypt.hash(password, 10);
     const assignedRole = ["student", "teacher", "admin"].includes(role) ? role : "student";
-    const user = db.create("users", { name, email, password: hashed, role: assignedRole, rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true, lastLogin: null, resetToken: null, resetTokenExpiry: null });
-    res.status(201).json({ success: true, message: "Registered successfully!", token: generateToken(user._id), user: safeUser(user) });
+
+    // Admin registers instantly approved, others need admin approval
+    const isApproved = assignedRole === "admin";
+
+    const user = db.create("users", {
+      name, email, password: hashed, role: assignedRole,
+      rollNumber: rollNumber || "", subject: subject || "", phone: phone || "",
+      isActive: true, isApproved,
+      lastLogin: null, resetToken: null, resetTokenExpiry: null
+    });
+
+    // Notify admin about new registration (only for non-admin registrations)
+    if (!isApproved) {
+      const admin = db.findOne("users", { role: "admin" });
+      if (admin) {
+        db.create("notifications", {
+          userId: admin._id,
+          title: "🆕 New Registration Request",
+          message: `${name} (${assignedRole}) has registered and is waiting for your approval.`,
+          type: "approval",
+          isRead: false,
+          createdById: user._id,
+          relatedUserId: user._id
+        });
+      }
+      return res.status(201).json({
+        success: true,
+        pending: true,
+        message: "Registration successful! Your account is pending admin approval. You will be able to login once approved. ⏳"
+      });
+    }
+
+    // Admin: return token directly
+    res.status(201).json({ success: true, message: "Admin registered successfully!", token: generateToken(user._id), user: safeUser(user) });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
@@ -39,6 +71,16 @@ exports.login = async (req, res) => {
     const user = db.findOne("users", { email });
     if (!user) return res.status(401).json({ success: false, message: "Invalid email or password." });
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account deactivated. Contact admin." });
+
+    // Approval check — admin is always approved
+    if (user.role !== "admin" && !user.isApproved) {
+      return res.status(403).json({
+        success: false,
+        pending: true,
+        message: "Your account is pending admin approval. Please wait for the admin to approve your registration. ⏳"
+      });
+    }
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ success: false, message: "Invalid email or password." });
     db.updateById("users", user._id, { lastLogin: new Date().toISOString() });

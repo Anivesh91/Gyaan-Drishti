@@ -20,18 +20,24 @@ const authCard = {
 export const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
+    setPending(false); setError("");
     if (!form.email || !form.password) { setError("Fill all fields."); return; }
     const res = await login(form.email, form.password);
     if (res.success) {
       if (res.user.role === "student") navigate("/student/dashboard");
       else if (res.user.role === "teacher") navigate("/teacher/dashboard");
       else navigate("/admin/dashboard");
-    } else setError(res.message);
+    } else if (res.pending) {
+      setPending(true);
+    } else {
+      setError(res.message);
+    }
   };
 
   return (
@@ -43,6 +49,13 @@ export const Login = () => {
         <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 4px" }}>Welcome Back 👋</h2>
         <p style={{ ...authCard.sub, margin: "0 0 20px" }}>Login to your account</p>
         {error && <div style={authCard.err}>{error}</div>}
+        {pending && (
+          <div style={{ background: "#fffbeb", border: "1px solid #f6e05e", color: "#744210", padding: "14px", borderRadius: "10px", marginBottom: "14px", textAlign: "center" }}>
+            <div style={{ fontSize: "28px", marginBottom: "6px" }}>⏳</div>
+            <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>Account Pending Approval</div>
+            <div style={{ fontSize: "12px", opacity: 0.8 }}>Your registration is awaiting admin approval. You'll be able to login once approved.</div>
+          </div>
+        )}
         <form onSubmit={submit}>
           <label style={authCard.label}>Email</label>
           <input style={authCard.input} type="email" placeholder="Enter email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
@@ -82,8 +95,16 @@ export const Register = () => {
     if (form.password !== form.confirmPassword) { setError("Passwords don't match."); return; }
     if (form.password.length < 6) { setError("Password min 6 chars."); return; }
     const res = await register(form);
-    if (res.success) { setSuccess("Registered! Redirecting..."); setTimeout(() => navigate("/login"), 1500); }
-    else setError(res.message);
+    if (res.success) {
+      if (res.pending) {
+        // Non-admin: show pending message, don't redirect to login yet
+        setSuccess("pending");
+      } else {
+        // Admin registered: go to login
+        setSuccess("Registered successfully! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 1500);
+      }
+    } else setError(res.message);
   };
 
   return (
@@ -93,7 +114,19 @@ export const Register = () => {
         <h1 style={authCard.title}>Create Account 🎓</h1>
         <p style={authCard.sub}>Join Gyaan Drishti today</p>
         {error && <div style={authCard.err}>{error}</div>}
-        {success && <div style={authCard.suc}>{success}</div>}
+        {success === "pending" ? (
+          <div style={{ textAlign: "center", padding: "10px 0" }}>
+            <div style={{ fontSize: "52px", marginBottom: "12px" }}>⏳</div>
+            <h3 style={{ margin: "0 0 8px", color: "#1a1a2e", fontSize: "17px" }}>Registration Submitted!</h3>
+            <p style={{ color: "#666", fontSize: "13px", lineHeight: "1.6", margin: "0 0 16px" }}>
+              Your account is <strong>pending admin approval</strong>.<br />
+              You will be able to login once the admin approves your request.
+            </p>
+            <Link to="/login" style={{ ...authCard.link, fontSize: "14px" }}>← Back to Login</Link>
+          </div>
+        ) : success ? (
+          <div style={authCard.suc}>{success}</div>
+        ) : (
         <form onSubmit={submit}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
             <div>
@@ -127,9 +160,12 @@ export const Register = () => {
           </div>
           <button style={authCard.btn} type="submit">Create Account</button>
         </form>
+        )}
+        {!success && (
         <p style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "#666" }}>
           Have account? <Link to="/login" style={authCard.link}>Login</Link>
         </p>
+        )}
       </div>
     </div>
   );

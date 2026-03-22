@@ -24,16 +24,21 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await API.post("/auth/login", { email, password });
+      // pending: true means account not yet approved
+      if (res.data.pending) return { success: false, pending: true, message: res.data.message };
       localStorage.setItem("token", res.data.token);
       setUser(res.data.user);
       return { success: true, user: res.data.user };
-    } catch (err) { return { success: false, message: err.response?.data?.message || "Login failed" }; }
+    } catch (err) {
+      const data = err.response?.data;
+      return { success: false, pending: data?.pending || false, message: data?.message || "Login failed" };
+    }
   };
 
   const register = async (data) => {
     try {
       const res = await API.post("/auth/register", data);
-      return { success: true, message: res.data.message };
+      return { success: true, pending: res.data.pending || false, message: res.data.message };
     } catch (err) { return { success: false, message: err.response?.data?.message || "Registration failed" }; }
   };
 
