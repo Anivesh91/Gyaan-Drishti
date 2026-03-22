@@ -63,6 +63,18 @@ exports.createUser = async (req, res) => {
     if (!name || !email || !password) return res.status(400).json({ success: false, message: "Fill all required fields." });
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already exists." });
 
+    // Roll number duplicate check — only for students
+    if (role === "student" && rollNumber && rollNumber.trim() !== "") {
+      if (db.findAll("users").some(u => u.rollNumber && u.rollNumber.trim() === rollNumber.trim()))
+        return res.status(400).json({ success: false, message: "Roll number already exists." });
+    }
+
+    // Phone duplicate check — for everyone (only if phone provided)
+    if (phone && phone.trim() !== "") {
+      if (db.findAll("users").some(u => u.phone && u.phone.trim() === phone.trim()))
+        return res.status(400).json({ success: false, message: "Phone number already registered with another account." });
+    }
+
     // Only one admin allowed
     if (role === "admin") {
       const existingAdmin = db.findOne("users", { role: "admin" });

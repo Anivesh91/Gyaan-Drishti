@@ -504,5 +504,29 @@
     "_id": "8b799458-709e-451d-9f4a-e0f71c03a327",
     "createdAt": "2026-03-21T18:46:47.007Z",
     "updatedAt": "2026-03-21T18:46:47.007Z"
+  },
+  {
+    "userId": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
+    "title": "🆕 New Registration Request",
+    "message": "Rahul (student) has registered and is waiting for your approval.",
+    "type": "approval",
+    "isRead": false,
+    "createdById": "b2f2f8ae-8c1b-4c8f-8f68-b2feb67be667",
+    "relatedUserId": "b2f2f8ae-8c1b-4c8f-8f68-b2feb67be667",
+    "_id": "8158997b-29cc-4297-98d3-21b2578f5fca",
+    "createdAt": "2026-03-22T19:24:48.183Z",
+    "updatedAt": "2026-03-22T19:24:48.183Z"
+  },
+  {
+    "userId": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
+    "title": "🆕 New Registration Request",
+    "message": "Rahul (student) has registered and is waiting for your approval.",
+    "type": "approval",
+    "isRead": false,
+    "createdById": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "relatedUserId": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "_id": "5dfbd5bb-6f5f-4a96-b77e-ebe805d5b2af",
+    "createdAt": "2026-03-22T19:29:20.649Z",
+    "updatedAt": "2026-03-22T19:29:20.649Z"
   }
 ]

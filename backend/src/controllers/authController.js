@@ -19,6 +19,18 @@ exports.register = async (req, res) => {
 
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already registered." });
 
+    // Roll number duplicate check — only for students
+    if (role === "student" && rollNumber && rollNumber.trim() !== "") {
+      if (db.findAll("users").some(u => u.rollNumber && u.rollNumber.trim() === rollNumber.trim()))
+        return res.status(400).json({ success: false, message: "Roll number already registered. Please check your roll number." });
+    }
+
+    // Phone duplicate check — for everyone (only if phone provided)
+    if (phone && phone.trim() !== "") {
+      if (db.findAll("users").some(u => u.phone && u.phone.trim() === phone.trim()))
+        return res.status(400).json({ success: false, message: "Phone number already registered with another account." });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const assignedRole = ["student", "teacher", "admin"].includes(role) ? role : "student";
 
