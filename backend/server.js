@@ -6,8 +6,8 @@ const fs = require("fs");
 
 dotenv.config();
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, "src/data");
+// Ensure data directory exists (FIXED: was "src/data", now correctly "data")
+const dataDir = path.join(__dirname, "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const app = express();
@@ -27,5 +27,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server: http://localhost:${PORT}`);
   console.log(`💾 Database: JSON files (no MongoDB needed!)`);
-  console.log(`📁 Data stored in: src/data/`);
+  console.log(`📁 Data stored in: data/`);
 });
