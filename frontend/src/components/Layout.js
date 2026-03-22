@@ -8,18 +8,30 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [unread, setUnread] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30000);
+    if (user?.role === "admin") fetchPending();
+    const interval = setInterval(() => {
+      fetchUnread();
+      if (user?.role === "admin") fetchPending();
+    }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const fetchUnread = async () => {
     try {
       const res = await API.get("/notifications");
       setUnread(res.data.unread);
+    } catch {}
+  };
+
+  const fetchPending = async () => {
+    try {
+      const res = await API.get("/users/pending");
+      setPendingCount(res.data.count || 0);
     } catch {}
   };
 
@@ -45,6 +57,7 @@ const Layout = ({ children }) => {
 
   const adminLinks = [
     { path: "/admin/dashboard", label: "🏠 Dashboard" },
+    { path: "/admin/pending", label: "⏳ Pending Approvals", badge: pendingCount },
     { path: "/admin/users", label: "👥 Manage Users" },
     { path: "/admin/add-user", label: "➕ Add User" },
     { path: "/admin/announcements", label: "📢 Announcements" },
@@ -69,15 +82,22 @@ const Layout = ({ children }) => {
         <nav style={{ padding: "16px 8px" }}>
           {links.map(link => (
             <Link key={link.path} to={link.path} style={{
-              display: "block", padding: "10px 12px", borderRadius: "8px", marginBottom: "4px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 12px", borderRadius: "8px", marginBottom: "4px",
               color: location.pathname === link.path ? "white" : "#aaa",
               background: location.pathname === link.path ? "rgba(102,126,234,0.3)" : "transparent",
               textDecoration: "none", fontSize: "13px", fontWeight: "600",
               borderLeft: location.pathname === link.path ? "3px solid #667eea" : "3px solid transparent",
             }}>
-              {link.label}
-              {link.label.includes("Notifications") && unread > 0 && (
-                <span style={{ background: "#e53e3e", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "6px" }}>{unread}</span>
+              <span>
+                {link.label}
+                {link.label.includes("Notifications") && unread > 0 && (
+                  <span style={{ background: "#e53e3e", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "6px" }}>{unread}</span>
+                )}
+              </span>
+              {/* Pending approvals badge */}
+              {link.badge > 0 && (
+                <span style={{ background: "#ed8936", color: "white", borderRadius: "10px", padding: "1px 7px", fontSize: "10px", fontWeight: "800", flexShrink: 0 }}>{link.badge}</span>
               )}
             </Link>
           ))}
@@ -96,6 +116,11 @@ const Layout = ({ children }) => {
         <div style={{ background: "white", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 10px rgba(0,0,0,0.08)" }}>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>☰</button>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {user?.role === "admin" && pendingCount > 0 && (
+              <Link to="/admin/pending" style={{ background: "#ed8936", color: "white", padding: "4px 12px", borderRadius: "12px", fontSize: "12px", fontWeight: "700", textDecoration: "none" }}>
+                ⏳ {pendingCount} Pending
+              </Link>
+            )}
             <span style={{ background: "#667eea", color: "white", padding: "3px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>{user?.role}</span>
             <span style={{ fontSize: "14px", fontWeight: "600", color: "#4a5568" }}>{user?.name}</span>
           </div>

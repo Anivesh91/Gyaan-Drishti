@@ -13,7 +13,7 @@ import { StudentDashboard, StudentAttendance, StudentMarks, NotificationsPage, P
 import { TeacherDashboard, MarkAttendance, ViewAttendanceTeacher, EnterMarks, ViewMarksTeacher, TeacherAnnouncements } from "./pages/teacher/TeacherPages";
 
 // Admin Pages
-import { AdminDashboard, ManageUsers, AddUser, AdminAnnouncements } from "./pages/admin/AdminPages";
+import { AdminDashboard, ManageUsers, AddUser, AdminAnnouncements, PendingApprovals } from "./pages/admin/AdminPages";
 
 import "./App.css";
 
@@ -52,6 +52,7 @@ function App() {
           <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><ManageUsers /></ProtectedRoute>} />
           <Route path="/admin/add-user" element={<ProtectedRoute allowedRoles={["admin"]}><AddUser /></ProtectedRoute>} />
+          <Route path="/admin/pending" element={<ProtectedRoute allowedRoles={["admin"]}><PendingApprovals /></ProtectedRoute>} />
           <Route path="/admin/announcements" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAnnouncements /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute allowedRoles={["admin"]}><NotificationsPage /></ProtectedRoute>} />
           <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={["admin"]}><ProfilePage /></ProtectedRoute>} />

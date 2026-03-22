@@ -5,6 +5,9 @@ import API from "../../utils/api";
 // Admin Dashboard
 export const AdminDashboard = () => {
   const [stats, setStats] = useState({ students: 0, teachers: 0, admins: 0, total: 0 });
+  const [requireApproval, setRequireApproval] = useState(false);
+  const [toggleMsg, setToggleMsg] = useState("");
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     API.get("/users").then(r => {
@@ -16,12 +19,48 @@ export const AdminDashboard = () => {
         total: users.length,
       });
     });
+    // Load current approval setting
+    API.get("/settings").then(r => setRequireApproval(r.data.settings?.requireApproval || false)).catch(() => {});
   }, []);
+
+  const toggleApproval = async () => {
+    setToggling(true); setToggleMsg("");
+    try {
+      const res = await API.put("/settings", { requireApproval: !requireApproval });
+      setRequireApproval(!requireApproval);
+      setToggleMsg(res.data.message);
+      setTimeout(() => setToggleMsg(""), 3000);
+    } catch { setToggleMsg("Failed to update setting."); }
+    setToggling(false);
+  };
 
   return (
     <Layout>
       <h1 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 4px" }}>Admin Panel 🛠️</h1>
       <p style={{ color: "#888", margin: "0 0 24px" }}>System overview and management</p>
+
+      {/* Registration Mode Toggle */}
+      <div style={{ background: "white", borderRadius: "12px", padding: "20px", marginBottom: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h3 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700" }}>🔐 Registration Mode</h3>
+          <p style={{ margin: 0, fontSize: "13px", color: "#666" }}>
+            {requireApproval
+              ? "Approval Mode — new registrations need your approval before login"
+              : "Open Mode — new registrations can login immediately"}
+          </p>
+          {toggleMsg && <p style={{ margin: "6px 0 0", fontSize: "13px", fontWeight: "600", color: requireApproval ? "#ed8936" : "#48bb78" }}>{toggleMsg}</p>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "700", color: requireApproval ? "#ed8936" : "#48bb78" }}>
+            {requireApproval ? "⏳ Approval Required" : "✅ Open Registration"}
+          </span>
+          {/* Toggle Switch */}
+          <div onClick={toggling ? null : toggleApproval} style={{ width: "52px", height: "28px", borderRadius: "14px", background: requireApproval ? "#ed8936" : "#48bb78", cursor: toggling ? "not-allowed" : "pointer", position: "relative", transition: "background 0.3s", opacity: toggling ? 0.7 : 1 }}>
+            <div style={{ position: "absolute", top: "3px", left: requireApproval ? "27px" : "3px", width: "22px", height: "22px", background: "white", borderRadius: "50%", transition: "left 0.3s", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} />
+          </div>
+        </div>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "16px", marginBottom: "28px" }}>
         {[["Total Users", stats.total, "#667eea", "👥"], ["Students", stats.students, "#48bb78", "👨‍🎓"], ["Teachers", stats.teachers, "#ed8936", "👨‍🏫"], ["Admins", stats.admins, "#764ba2", "🛡️"]].map(([t, v, c, i]) => (
           <div key={t} style={{ background: "white", borderRadius: "12px", padding: "20px", borderLeft: `4px solid ${c}`, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
@@ -272,6 +311,112 @@ export const AdminAnnouncements = () => {
           </form>
         )}
       </div>
+    </Layout>
+  );
+};
+
+// ── Pending Approvals Page ──────────────────────────────────────────────────
+export const PendingApprovals = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState("");
+
+  const fetchPending = async () => {
+    setLoading(true);
+    try {
+      const res = await API.get("/users/pending");
+      setUsers(res.data.users || []);
+    } catch {}
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchPending(); }, []);
+
+  const approve = async (id, name) => {
+    try {
+      await API.put(`/users/${id}/approve`);
+      setMsg(`✅ ${name} has been approved!`);
+      fetchPending();
+    } catch (e) { setMsg(e.response?.data?.message || "Error approving user."); }
+  };
+
+  const reject = async (id, name) => {
+    if (!window.confirm(`Reject and delete ${name}'s registration? This cannot be undone.`)) return;
+    try {
+      await API.delete(`/users/${id}/reject`);
+      setMsg(`❌ ${name}'s registration has been rejected.`);
+      fetchPending();
+    } catch (e) { setMsg(e.response?.data?.message || "Error rejecting user."); }
+  };
+
+  const roleColor = { student: "#48bb78", teacher: "#667eea" };
+
+  return (
+    <Layout>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div>
+          <h1 style={{ fontSize: "22px", fontWeight: "800", margin: "0 0 4px" }}>⏳ Pending Approvals</h1>
+          <p style={{ color: "#888", fontSize: "13px", margin: 0 }}>Review and approve or reject new registration requests</p>
+        </div>
+        {users.length > 0 && (
+          <span style={{ background: "#ed893620", color: "#ed8936", border: "1px solid #ed893644", padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: "700" }}>
+            {users.length} Pending
+          </span>
+        )}
+      </div>
+
+      {msg && (
+        <div style={{ background: msg.startsWith("✅") ? "#f0fff4" : "#fff5f5", border: `1px solid ${msg.startsWith("✅") ? "#9ae6b4" : "#fed7d7"}`, color: msg.startsWith("✅") ? "#276749" : "#e53e3e", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontWeight: "600" }}>
+          {msg}
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ background: "white", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
+          <p style={{ color: "#888" }}>Loading...</p>
+        </div>
+      ) : users.length === 0 ? (
+        <div style={{ background: "white", borderRadius: "12px", padding: "60px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+          <div style={{ fontSize: "52px", marginBottom: "12px" }}>🎉</div>
+          <h3 style={{ margin: "0 0 8px", color: "#1a1a2e" }}>All caught up!</h3>
+          <p style={{ color: "#888", margin: 0, fontSize: "14px" }}>No pending registration requests right now.</p>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: "12px" }}>
+          {users.map(u => (
+            <div key={u._id} style={{ background: "white", borderRadius: "12px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", borderLeft: `4px solid ${roleColor[u.role] || "#888"}` }}>
+              {/* Avatar + Info */}
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <div style={{ width: "46px", height: "46px", background: `linear-gradient(135deg,${roleColor[u.role] || "#888"},#764ba2)`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "800", fontSize: "18px", flexShrink: 0 }}>
+                  {u.name?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "15px", color: "#1a1a2e", marginBottom: "3px" }}>{u.name}</div>
+                  <div style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>{u.email}</div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    <span style={{ background: (roleColor[u.role] || "#888") + "20", color: roleColor[u.role] || "#888", padding: "2px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "700", textTransform: "capitalize" }}>{u.role}</span>
+                    {u.rollNumber && <span style={{ background: "#f0f4ff", color: "#667eea", padding: "2px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "600" }}>Roll: {u.rollNumber}</span>}
+                    {u.subject && <span style={{ background: "#f0f4ff", color: "#667eea", padding: "2px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "600" }}>Subject: {u.subject}</span>}
+                    {u.phone && <span style={{ background: "#f7f7f7", color: "#888", padding: "2px 10px", borderRadius: "12px", fontSize: "11px" }}>📞 {u.phone}</span>}
+                  </div>
+                </div>
+              </div>
+              {/* Registered at + Action buttons */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px", flexShrink: 0 }}>
+                <span style={{ fontSize: "11px", color: "#aaa" }}>Registered {new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => approve(u._id, u.name)} style={{ padding: "8px 18px", background: "linear-gradient(135deg,#48bb78,#38a169)", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700" }}>
+                    ✅ Approve
+                  </button>
+                  <button onClick={() => reject(u._id, u.name)} style={{ padding: "8px 18px", background: "white", color: "#e53e3e", border: "2px solid #fed7d7", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700" }}>
+                    ❌ Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </Layout>
   );
 };

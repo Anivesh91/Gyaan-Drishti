@@ -199,11 +199,20 @@ export const ViewAttendanceTeacher = () => {
 // Enter Marks
 export const EnterMarks = () => {
   const { user } = useAuth();
+  const [tab, setTab] = useState("manual"); // "manual" | "excel"
+
+  // ── Manual entry state ──
   const [students, setStudents] = useState([]);
   const [marks, setMarks] = useState({});
   const [form, setForm] = useState({ subject: user?.subject || "", examType: "midterm", maxMarks: 100 });
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+
+  // ── Excel upload state ──
+  const [exForm, setExForm] = useState({ subject: user?.subject || "", examType: "midterm", maxMarks: 100 });
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState(null); // upload result
 
   useEffect(() => {
     API.get("/attendance/students").then(r => {
@@ -214,66 +223,267 @@ export const EnterMarks = () => {
     });
   }, []);
 
-  const submit = async () => {
+  // ── Manual submit ──
+  const submitManual = async () => {
     if (!form.subject) { setErr("Enter subject."); return; }
     const records = students.filter(s => marks[s._id] !== "").map(s => ({ studentId: s._id, marks: Number(marks[s._id]) }));
     if (records.length === 0) { setErr("Enter at least one mark."); return; }
     try {
       await API.post("/marks/bulk", { ...form, records });
-      setMsg(`Marks saved for ${records.length} students!`); setErr("");
+      setMsg(`✅ Marks saved for ${records.length} students!`); setErr("");
     } catch (e) { setErr(e.response?.data?.message || "Error"); }
   };
 
+  // ── Download template ──
+  const downloadTemplate = async () => {
+    try {
+      const res = await API.get("/marks/template", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a"); a.href = url; a.download = "marks_template.xlsx"; a.click();
+      window.URL.revokeObjectURL(url);
+    } catch { alert("Could not download template."); }
+  };
+
+  // ── Excel upload ──
+  const submitExcel = async () => {
+    if (!file) { setErr("Please select an Excel file."); return; }
+    if (!exForm.subject) { setErr("Enter subject name."); return; }
+    setUploading(true); setResult(null); setErr(""); setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("subject", exForm.subject);
+      fd.append("examType", exForm.examType);
+      fd.append("maxMarks", exForm.maxMarks);
+      const res = await API.post("/marks/upload-excel", fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setResult(res.data);
+      setMsg(res.data.message);
+      setFile(null);
+      // Reset file input
+      document.getElementById("excelFileInput").value = "";
+    } catch (e) { setErr(e.response?.data?.message || "Upload failed."); }
+    setUploading(false);
+  };
+
+  const inp = { width: "100%", padding: "10px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box" };
+  const tabBtn = (t, label) => (
+    <button onClick={() => { setTab(t); setMsg(""); setErr(""); setResult(null); }}
+      style={{ padding: "9px 22px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: "600", background: tab === t ? "#667eea" : "#f0f0f0", color: tab === t ? "white" : "#666" }}>
+      {label}
+    </button>
+  );
+
   return (
     <Layout>
-      <h1 style={{ fontSize: "22px", fontWeight: "800", margin: "0 0 20px" }}>📝 Enter Marks</h1>
-      <div style={{ background: "white", borderRadius: "12px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "20px" }}>
-          <div>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Subject *</label>
-            <input style={{ width: "100%", padding: "10px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box" }} value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Subject name" />
+      <h1 style={{ fontSize: "22px", fontWeight: "800", margin: "0 0 16px" }}>📝 Enter Marks</h1>
+
+      {/* Tab switcher */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+        {tabBtn("manual", "✏️ Manual Entry")}
+        {tabBtn("excel", "📊 Upload Excel")}
+      </div>
+
+      {/* ── MANUAL TAB ── */}
+      {tab === "manual" && (
+        <div style={{ background: "white", borderRadius: "12px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Subject *</label>
+              <input style={inp} value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Subject name" />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Exam Type *</label>
+              <select style={inp} value={form.examType} onChange={e => setForm({ ...form, examType: e.target.value })}>
+                <option value="midterm">Mid Term</option>
+                <option value="endterm">End Term</option>
+                <option value="assignment">Assignment</option>
+                <option value="quiz">Quiz</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Max Marks</label>
+              <input style={inp} type="number" value={form.maxMarks} onChange={e => setForm({ ...form, maxMarks: Number(e.target.value) })} />
+            </div>
           </div>
-          <div>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Exam Type *</label>
-            <select style={{ width: "100%", padding: "10px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box" }} value={form.examType} onChange={e => setForm({ ...form, examType: e.target.value })}>
-              <option value="midterm">Mid Term</option>
-              <option value="endterm">End Term</option>
-              <option value="assignment">Assignment</option>
-              <option value="quiz">Quiz</option>
-            </select>
+          {msg && <div style={{ background: "#f0fff4", border: "1px solid #9ae6b4", color: "#276749", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{msg}</div>}
+          {err && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", color: "#e53e3e", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{err}</div>}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            <thead style={{ background: "#f9f9f9" }}>
+              <tr>{["#", "Student Name", "Roll No", `Marks (out of ${form.maxMarks})`].map(h => <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: "700", color: "#4a5568" }}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {students.map((s, i) => (
+                <tr key={s._id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <td style={{ padding: "10px 14px", color: "#888" }}>{i + 1}</td>
+                  <td style={{ padding: "10px 14px", fontWeight: "600" }}>{s.name}</td>
+                  <td style={{ padding: "10px 14px", color: "#888" }}>{s.rollNumber || "-"}</td>
+                  <td style={{ padding: "10px 14px" }}>
+                    <input type="number" min={0} max={form.maxMarks} placeholder={`0-${form.maxMarks}`} value={marks[s._id]} onChange={e => setMarks({ ...marks, [s._id]: e.target.value })}
+                      style={{ width: "100px", padding: "6px 10px", border: "2px solid #e2e8f0", borderRadius: "6px", fontSize: "14px", outline: "none" }} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {students.length > 0 && (
+            <button onClick={submitManual} style={{ marginTop: "16px", padding: "12px 28px", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "white", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
+              💾 Save All Marks
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── EXCEL TAB ── */}
+      {tab === "excel" && (
+        <div>
+          {/* Step 1 — Info + Template */}
+          <div style={{ background: "linear-gradient(135deg,#667eea15,#764ba215)", border: "1px solid #667eea33", borderRadius: "12px", padding: "20px", marginBottom: "20px" }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: "700", color: "#667eea" }}>📋 How to use Excel Upload</h3>
+            <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#4a5568", lineHeight: "1.6" }}>
+              1. Download the template below — it has all student names and roll numbers pre-filled.<br />
+              2. Fill in the <strong>Marks</strong> column for each student.<br />
+              3. Select subject, exam type, max marks — then upload the file.
+            </p>
+            <div style={{ background: "#fff", borderRadius: "8px", padding: "12px", marginBottom: "12px", fontSize: "13px" }}>
+              <strong>📌 Excel Format:</strong>
+              <table style={{ marginTop: "8px", borderCollapse: "collapse", width: "100%" }}>
+                <thead>
+                  <tr style={{ background: "#f9f9f9" }}>
+                    {["Roll Number", "Student Name", "Marks"].map(h => (
+                      <th key={h} style={{ padding: "6px 12px", textAlign: "left", fontWeight: "700", border: "1px solid #e2e8f0", fontSize: "12px" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[["CS001", "Rahul Sharma", "85"], ["CS002", "Priya Singh", "72"], ["CS003", "Amit Kumar", "91"]].map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => <td key={j} style={{ padding: "6px 12px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#666" }}>{cell}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button onClick={downloadTemplate} style={{ padding: "9px 20px", background: "#667eea", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700" }}>
+              ⬇️ Download Pre-filled Template
+            </button>
           </div>
-          <div>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Max Marks</label>
-            <input style={{ width: "100%", padding: "10px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box" }} type="number" value={form.maxMarks} onChange={e => setForm({ ...form, maxMarks: Number(e.target.value) })} />
+
+          {/* Step 2 — Upload Form */}
+          <div style={{ background: "white", borderRadius: "12px", padding: "24px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: "15px", fontWeight: "700" }}>📤 Upload Filled Excel</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Subject *</label>
+                <input style={inp} value={exForm.subject} onChange={e => setExForm({ ...exForm, subject: e.target.value })} placeholder="Subject name" />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Exam Type *</label>
+                <select style={inp} value={exForm.examType} onChange={e => setExForm({ ...exForm, examType: e.target.value })}>
+                  <option value="midterm">Mid Term</option>
+                  <option value="endterm">End Term</option>
+                  <option value="assignment">Assignment</option>
+                  <option value="quiz">Quiz</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" }}>Max Marks</label>
+                <input style={inp} type="number" value={exForm.maxMarks} onChange={e => setExForm({ ...exForm, maxMarks: Number(e.target.value) })} />
+              </div>
+            </div>
+
+            {/* File picker */}
+            <div style={{ border: "2px dashed #667eea55", borderRadius: "10px", padding: "24px", textAlign: "center", marginBottom: "16px", background: "#f8f9ff" }}>
+              <div style={{ fontSize: "36px", marginBottom: "8px" }}>📊</div>
+              <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#4a5568", fontWeight: "600" }}>
+                {file ? `✅ Selected: ${file.name}` : "Click to select your Excel file (.xlsx / .xls)"}
+              </p>
+              <input id="excelFileInput" type="file" accept=".xlsx,.xls" onChange={e => { setFile(e.target.files[0]); setResult(null); setMsg(""); setErr(""); }}
+                style={{ display: "none" }} />
+              <button onClick={() => document.getElementById("excelFileInput").click()}
+                style={{ padding: "8px 20px", background: "white", border: "2px solid #667eea", color: "#667eea", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700" }}>
+                📁 Browse File
+              </button>
+            </div>
+
+            {msg && !result && <div style={{ background: "#f0fff4", border: "1px solid #9ae6b4", color: "#276749", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{msg}</div>}
+            {err && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", color: "#e53e3e", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{err}</div>}
+
+            <button onClick={submitExcel} disabled={uploading || !file}
+              style={{ padding: "12px 28px", background: uploading ? "#aaa" : "linear-gradient(135deg,#667eea,#764ba2)", color: "white", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: "700", cursor: uploading ? "not-allowed" : "pointer" }}>
+              {uploading ? "⏳ Processing..." : "📤 Upload & Save Marks"}
+            </button>
+
+            {/* Result Panel */}
+            {result && (
+              <div style={{ marginTop: "20px" }}>
+                {/* Summary badges */}
+                <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
+                  {[
+                    ["✅ Saved", result.summary.saved, "#48bb78"],
+                    ["⚠️ Skipped", result.summary.skipped, "#ed8936"],
+                    ["❌ Not Found", result.summary.notFound, "#e53e3e"],
+                  ].map(([label, count, color]) => (
+                    <div key={label} style={{ background: color + "15", border: `1px solid ${color}44`, borderRadius: "8px", padding: "10px 18px", textAlign: "center" }}>
+                      <div style={{ fontSize: "22px", fontWeight: "800", color }}>{count}</div>
+                      <div style={{ fontSize: "12px", color, fontWeight: "600" }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Saved list */}
+                {result.details.saved.length > 0 && (
+                  <div style={{ marginBottom: "14px" }}>
+                    <p style={{ fontWeight: "700", fontSize: "13px", color: "#276749", marginBottom: "6px" }}>✅ Successfully Saved:</p>
+                    <div style={{ background: "#f0fff4", border: "1px solid #9ae6b4", borderRadius: "8px", overflow: "hidden" }}>
+                      {result.details.saved.map((s, i) => (
+                        <div key={i} style={{ padding: "8px 14px", borderBottom: "1px solid #c6f6d5", fontSize: "13px", display: "flex", justifyContent: "space-between" }}>
+                          <span>{s.name} {s.roll ? `(${s.roll})` : ""}</span>
+                          <span style={{ fontWeight: "700", color: "#276749" }}>{s.marks} marks</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Skipped list */}
+                {result.details.skipped.length > 0 && (
+                  <div style={{ marginBottom: "14px" }}>
+                    <p style={{ fontWeight: "700", fontSize: "13px", color: "#c05621", marginBottom: "6px" }}>⚠️ Skipped (check these):</p>
+                    <div style={{ background: "#fffaf0", border: "1px solid #fbd38d", borderRadius: "8px", overflow: "hidden" }}>
+                      {result.details.skipped.map((s, i) => (
+                        <div key={i} style={{ padding: "8px 14px", borderBottom: "1px solid #fbd38d", fontSize: "13px", display: "flex", justifyContent: "space-between" }}>
+                          <span>{s.name || s.roll || "Unknown"}</span>
+                          <span style={{ color: "#c05621" }}>{s.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Not found list */}
+                {result.details.notFound.length > 0 && (
+                  <div>
+                    <p style={{ fontWeight: "700", fontSize: "13px", color: "#c53030", marginBottom: "6px" }}>❌ Student Not Found in System:</p>
+                    <div style={{ background: "#fff5f5", border: "1px solid #fed7d7", borderRadius: "8px", overflow: "hidden" }}>
+                      {result.details.notFound.map((s, i) => (
+                        <div key={i} style={{ padding: "8px 14px", borderBottom: "1px solid #fed7d7", fontSize: "13px", color: "#c53030" }}>
+                          Roll: {s.roll || "-"} | Name: {s.name || "-"}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-        {msg && <div style={{ background: "#f0fff4", border: "1px solid #9ae6b4", color: "#276749", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{msg}</div>}
-        {err && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", color: "#e53e3e", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>{err}</div>}
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-          <thead style={{ background: "#f9f9f9" }}>
-            <tr>
-              {["#", "Student Name", "Roll No", `Marks (out of ${form.maxMarks})`].map(h => <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: "700", color: "#4a5568" }}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s, i) => (
-              <tr key={s._id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                <td style={{ padding: "10px 14px", color: "#888" }}>{i + 1}</td>
-                <td style={{ padding: "10px 14px", fontWeight: "600" }}>{s.name}</td>
-                <td style={{ padding: "10px 14px", color: "#888" }}>{s.rollNumber || "-"}</td>
-                <td style={{ padding: "10px 14px" }}>
-                  <input type="number" min={0} max={form.maxMarks} placeholder={`0-${form.maxMarks}`} value={marks[s._id]} onChange={e => setMarks({ ...marks, [s._id]: e.target.value })}
-                    style={{ width: "100px", padding: "6px 10px", border: "2px solid #e2e8f0", borderRadius: "6px", fontSize: "14px", outline: "none" }} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {students.length > 0 && <button onClick={submit} style={{ marginTop: "16px", padding: "12px 28px", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "white", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>Save All Marks</button>}
-      </div>
+      )}
     </Layout>
   );
 };
+
 
 // View Marks (Teacher)
 export const ViewMarksTeacher = () => {

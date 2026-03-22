@@ -12,6 +12,45 @@ exports.getAllUsers = (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
+// Get all pending approval users
+exports.getPendingUsers = (req, res) => {
+  try {
+    const pending = db.findAll("users").filter(u => u.isApproved === false && u.isActive);
+    res.status(200).json({ success: true, count: pending.length, users: pending.map(safe) });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+};
+
+// Approve a user
+exports.approveUser = (req, res) => {
+  try {
+    const user = db.findById("users", req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    db.updateById("users", user._id, { isApproved: true });
+
+    // Notify the user that they've been approved
+    db.create("notifications", {
+      userId: user._id,
+      title: "✅ Account Approved!",
+      message: "Your registration has been approved by the admin. You can now login to your account.",
+      type: "approval",
+      isRead: false,
+      createdById: req.user._id
+    });
+
+    res.status(200).json({ success: true, message: `${user.name}'s account has been approved!` });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+};
+
+// Reject a user (delete their account)
+exports.rejectUser = (req, res) => {
+  try {
+    const user = db.findById("users", req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    db.deleteById("users", user._id);
+    res.status(200).json({ success: true, message: `${user.name}'s registration has been rejected and removed.` });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+};
+
 exports.getUser = (req, res) => {
   const user = db.findById("users", req.params.id);
   if (!user) return res.status(404).json({ success: false, message: "User not found." });
@@ -24,14 +63,27 @@ exports.createUser = async (req, res) => {
     if (!name || !email || !password) return res.status(400).json({ success: false, message: "Fill all required fields." });
     if (db.findOne("users", { email })) return res.status(400).json({ success: false, message: "Email already exists." });
 
-    // Only one admin allowed in the entire system
+    // Roll number duplicate check — only for students
+    if (role === "student" && rollNumber && rollNumber.trim() !== "") {
+      if (db.findAll("users").some(u => u.rollNumber && u.rollNumber.trim() === rollNumber.trim()))
+        return res.status(400).json({ success: false, message: "Roll number already exists." });
+    }
+
+    // Phone duplicate check — for everyone (only if phone provided)
+    if (phone && phone.trim() !== "") {
+      if (db.findAll("users").some(u => u.phone && u.phone.trim() === phone.trim()))
+        return res.status(400).json({ success: false, message: "Phone number already registered with another account." });
+    }
+
+    // Only one admin allowed
     if (role === "admin") {
       const existingAdmin = db.findOne("users", { role: "admin" });
       if (existingAdmin) return res.status(400).json({ success: false, message: "An admin already exists. Only one admin is allowed in the system." });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = db.create("users", { name, email, password: hashed, role, rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true });
+    // Users created by admin are auto-approved
+    const user = db.create("users", { name, email, password: hashed, role, rollNumber: rollNumber || "", subject: subject || "", phone: phone || "", isActive: true, isApproved: true });
     res.status(201).json({ success: true, message: "User created!", user: safe(user) });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
