@@ -103,7 +103,13 @@ const Layout = ({ children }) => {
           ))}
         </nav>
         <div style={{ padding: "16px", position: "absolute", bottom: 0, width: "208px" }}>
-          <div style={{ color: "#aaa", fontSize: "12px", marginBottom: "8px" }}>👤 {user?.name}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            {user?.avatar
+              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid #667eea" }} />
+              : <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "12px", fontWeight: "700", flexShrink: 0 }}>{user?.name?.[0]?.toUpperCase()}</div>
+            }
+            <span style={{ color: "#aaa", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.name}</span>
+          </div>
           <button onClick={handleLogout} style={{ width: "100%", padding: "8px", background: "rgba(229,62,62,0.2)", border: "1px solid rgba(229,62,62,0.4)", color: "#fc8181", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
             🚪 Logout
           </button>
@@ -123,6 +129,10 @@ const Layout = ({ children }) => {
             )}
             <span style={{ background: "#667eea", color: "white", padding: "3px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>{user?.role}</span>
             <span style={{ fontSize: "14px", fontWeight: "600", color: "#4a5568" }}>{user?.name}</span>
+            {user?.avatar
+              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", border: "2px solid #667eea" }} />
+              : <div style={{ width: "32px", height: "32px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "13px", fontWeight: "700" }}>{user?.name?.[0]?.toUpperCase()}</div>
+            }
           </div>
         </div>
         {/* Page Content */}
