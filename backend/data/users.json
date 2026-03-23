@@ -8,44 +8,27 @@
     "subject": "",
     "phone": "9202185737",
     "isActive": true,
-    "lastLogin": "2026-03-22T21:31:02.096Z",
+    "lastLogin": "2026-03-23T18:14:35.881Z",
     "resetToken": null,
     "resetTokenExpiry": null,
     "_id": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
     "createdAt": "2026-03-21T18:37:04.894Z",
-    "updatedAt": "2026-03-22T21:31:02.097Z"
+    "updatedAt": "2026-03-23T18:14:35.881Z"
   },
   {
     "name": "Ankush Gurjwar",
     "email": "gurjwara@gmail.com",
     "password": "$2a$10$LeyJAYxpyXkC21xZ//LGteJN.uuBmnitfSeDxBVmMiLd5MT87evr6",
-    "role": "student",
-    "rollNumber": "0801CS241017",
-    "subject": "",
+    "role": "teacher",
+    "subject": "Maths",
     "phone": "8349952912",
     "isActive": true,
-    "lastLogin": "2026-03-21T18:41:24.557Z",
+    "lastLogin": "2026-03-23T16:53:00.422Z",
     "resetToken": null,
     "resetTokenExpiry": null,
     "_id": "e6cf2ed3-66ad-4bd9-a18d-ec03b3e2e565",
     "createdAt": "2026-03-21T18:41:02.041Z",
-    "updatedAt": "2026-03-21T18:41:24.557Z"
-  },
-  {
-    "name": "Aditya Koul",
-    "email": "adityakoul2006@gmail.com",
-    "password": "$2a$10$LMQh51I1N1smxuqd2pCjp./V9.380I6YD/RjsOGYgecS1euiTWgg.",
-    "role": "teacher",
-    "rollNumber": "",
-    "subject": "maths",
-    "phone": "7780935470",
-    "isActive": true,
-    "lastLogin": "2026-03-21T18:43:40.958Z",
-    "resetToken": null,
-    "resetTokenExpiry": null,
-    "_id": "908bba67-604c-40ec-8f21-26bd658fe4ba",
-    "createdAt": "2026-03-21T18:43:30.202Z",
-    "updatedAt": "2026-03-21T18:43:40.958Z"
+    "updatedAt": "2026-03-23T16:53:00.423Z"
   },
   {
     "name": "abhishek baish",
@@ -74,8 +57,8 @@
     "isActive": true,
     "_id": "e556fa41-2b2b-4caf-9280-4969f6aea774",
     "createdAt": "2026-03-22T19:01:44.023Z",
-    "updatedAt": "2026-03-22T19:03:51.986Z",
-    "lastLogin": "2026-03-22T19:03:51.986Z"
+    "updatedAt": "2026-03-23T18:16:03.316Z",
+    "lastLogin": "2026-03-23T18:16:03.316Z"
   },
   {
     "name": "Naman",
@@ -88,8 +71,8 @@
     "isActive": true,
     "_id": "f476e702-de87-43b3-813b-24e2ef4b2764",
     "createdAt": "2026-03-22T19:02:36.792Z",
-    "updatedAt": "2026-03-22T20:41:05.612Z",
-    "lastLogin": "2026-03-22T20:41:05.612Z"
+    "updatedAt": "2026-03-23T18:15:39.425Z",
+    "lastLogin": "2026-03-23T18:15:39.425Z"
   },
   {
     "name": "Rahul",
