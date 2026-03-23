@@ -236,6 +236,61 @@ export const ProfilePage = () => {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [tab, setTab] = useState("profile");
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
+
+  const BACKEND = "http://localhost:5000";
+
+  const getAvatarSrc = () => {
+    if (avatarPreview) return avatarPreview;
+    if (user?.avatar) return `${BACKEND}${user.avatar}`;
+    return null;
+  };
+
+  const handleAvatarClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!["jpg", "jpeg", "png"].includes(ext)) {
+      setErr("Sirf JPG, JPEG ya PNG file select karo!"); setMsg("");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErr("File 5MB se chhoti honi chahiye!"); setMsg("");
+      e.target.value = "";
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    // Upload to backend
+    setAvatarUploading(true);
+    setErr(""); setMsg("");
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await API.put("/users/profile/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setUser(res.data.user);
+      setMsg("Profile picture update ho gayi! 🎉");
+      setAvatarPreview(null); // now use the server URL
+    } catch (er) {
+      setErr(er.response?.data?.message || "Upload failed");
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const saveProfile = async (e) => {
     e.preventDefault();
@@ -261,16 +316,56 @@ export const ProfilePage = () => {
 
   const inp = { width: "100%", padding: "10px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box", marginBottom: "14px" };
 
+  const avatarSrc = getAvatarSrc();
+
   return (
     <Layout>
       <h1 style={{ fontSize: "22px", fontWeight: "800", margin: "0 0 20px" }}>👤 My Profile</h1>
       <div style={{ background: "white", borderRadius: "12px", padding: "20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-        <div style={{ width: "70px", height: "70px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "white", fontWeight: "700" }}>{user?.name?.[0]?.toUpperCase()}</div>
+
+        {/* Avatar with upload overlay */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <div
+            onClick={handleAvatarClick}
+            title="Profile picture change karo"
+            style={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", cursor: "pointer", border: "3px solid #667eea", position: "relative", background: "linear-gradient(135deg,#667eea,#764ba2)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            {avatarSrc ? (
+              <img src={avatarSrc} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: "32px", color: "white", fontWeight: "700" }}>{user?.name?.[0]?.toUpperCase()}</span>
+            )}
+            {/* Hover overlay */}
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: avatarUploading ? 1 : 0, transition: "opacity 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+              onMouseLeave={e => { if (!avatarUploading) e.currentTarget.style.opacity = 0; }}
+            >
+              {avatarUploading
+                ? <span style={{ color: "white", fontSize: "11px", fontWeight: "600" }}>Uploading...</span>
+                : <>
+                    <span style={{ fontSize: "18px" }}>📷</span>
+                    <span style={{ color: "white", fontSize: "10px", fontWeight: "600", marginTop: "2px" }}>Change</span>
+                  </>
+              }
+            </div>
+          </div>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+          />
+        </div>
+
         <div>
           <h2 style={{ margin: "0 0 4px" }}>{user?.name}</h2>
           <p style={{ margin: "0 0 4px", color: "#888", fontSize: "14px" }}>{user?.email}</p>
           <span style={{ background: "#667eea", color: "white", padding: "2px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "700", textTransform: "capitalize" }}>{user?.role}</span>
           {user?.rollNumber && <span style={{ marginLeft: "8px", background: "#f0f4ff", color: "#667eea", padding: "2px 10px", borderRadius: "12px", fontSize: "12px" }}>Roll: {user.rollNumber}</span>}
+          <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#aaa" }}>Profile picture pe click karke photo change karo (JPG, JPEG, PNG — max 5MB)</p>
         </div>
       </div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>

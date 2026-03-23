@@ -106,6 +106,16 @@ exports.updateProfile = (req, res) => {
   res.status(200).json({ success: true, message: "Profile updated!", user: safe(user) });
 };
 
+exports.uploadAvatar = (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: "Koi file upload nahi hui." });
+    // Build the public URL path
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const user = db.updateById("users", req.user._id, { avatar: avatarUrl });
+    res.status(200).json({ success: true, message: "Profile picture update ho gayi!", user: safe(user) });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+};
+
 exports.changePassword = async (req, res) => {
   try {
     const user = db.findById("users", req.user._id);
