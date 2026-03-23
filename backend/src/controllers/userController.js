@@ -112,7 +112,7 @@ exports.uploadAvatar = (req, res) => {
     // Build the public URL path
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
     const user = db.updateById("users", req.user._id, { avatar: avatarUrl });
-    res.status(200).json({ success: true, message: "Profile picture update ho gayi!", user: safe(user) });
+    res.status(200).json({ success: true, message: "Profile picture updated!", user: safe(user) });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 

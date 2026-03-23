@@ -281,7 +281,7 @@ export const ProfilePage = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setUser(res.data.user);
-      setMsg("Profile picture update ho gayi! 🎉");
+      setMsg("Profile picture updated!");
       setAvatarPreview(null); // now use the server URL
     } catch (er) {
       setErr(er.response?.data?.message || "Upload failed");
@@ -327,7 +327,7 @@ export const ProfilePage = () => {
         <div style={{ position: "relative", flexShrink: 0 }}>
           <div
             onClick={handleAvatarClick}
-            title="Profile picture change karo"
+            title="Change profile pic"
             style={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", cursor: "pointer", border: "3px solid #667eea", position: "relative", background: "linear-gradient(135deg,#667eea,#764ba2)", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             {avatarSrc ? (
@@ -365,7 +365,7 @@ export const ProfilePage = () => {
           <p style={{ margin: "0 0 4px", color: "#888", fontSize: "14px" }}>{user?.email}</p>
           <span style={{ background: "#667eea", color: "white", padding: "2px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "700", textTransform: "capitalize" }}>{user?.role}</span>
           {user?.rollNumber && <span style={{ marginLeft: "8px", background: "#f0f4ff", color: "#667eea", padding: "2px 10px", borderRadius: "12px", fontSize: "12px" }}>Roll: {user.rollNumber}</span>}
-          <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#aaa" }}>Profile picture pe click karke photo change karo (JPG, JPEG, PNG — max 5MB)</p>
+          <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#aaa" }}>(JPG, JPEG, PNG — max 5MB)</p>
         </div>
       </div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
