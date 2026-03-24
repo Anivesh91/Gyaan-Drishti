@@ -29,7 +29,6 @@ app.use((req, res) => res.status(404).json({ success: false, message: "Route not
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server: http://localhost:${PORT}`);
-  console.log(`💾 Database: JSON files (no MongoDB needed!)`);
-  console.log(`📁 Data stored in: data/`);
+  console.log(`🚀 Server started at : http://localhost:${PORT}`);
+  
 });
