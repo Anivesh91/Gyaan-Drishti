@@ -9,5 +9,38 @@
     "_id": "88ba9d81-bca4-4a00-aad7-0052c2a6ea91",
     "createdAt": "2026-03-21T18:43:57.312Z",
     "updatedAt": "2026-03-21T18:43:57.312Z"
+  },
+  {
+    "studentId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "subject": "agile",
+    "examType": "endterm",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "marks": 0,
+    "maxMarks": 100,
+    "_id": "fc46020a-6eaa-4adc-9ac9-78789033ce31",
+    "createdAt": "2026-03-24T11:20:55.543Z",
+    "updatedAt": "2026-03-24T11:21:22.378Z"
+  },
+  {
+    "studentId": "e556fa41-2b2b-4caf-9280-4969f6aea774",
+    "subject": "agile",
+    "examType": "endterm",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "marks": 45,
+    "maxMarks": 100,
+    "_id": "be6c5342-49a0-448c-b080-5aac35951c47",
+    "createdAt": "2026-03-24T11:20:55.548Z",
+    "updatedAt": "2026-03-24T11:20:55.548Z"
+  },
+  {
+    "studentId": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "subject": "agile",
+    "examType": "endterm",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "marks": 40,
+    "maxMarks": 100,
+    "_id": "27837387-d327-4879-9b5d-91326ea93810",
+    "createdAt": "2026-03-24T11:20:55.553Z",
+    "updatedAt": "2026-03-24T11:20:55.553Z"
   }
 ]

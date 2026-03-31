@@ -38,5 +38,65 @@
     "_id": "35869bf7-9e06-4902-ad1f-70b16fa445dd",
     "createdAt": "2026-03-22T20:42:12.313Z",
     "updatedAt": "2026-03-22T20:42:46.217Z"
+  },
+  {
+    "studentId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "subject": "agile",
+    "date": "2026-03-25",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "absent",
+    "_id": "7e29020c-e7af-4be0-99ac-25897d93c46f",
+    "createdAt": "2026-03-24T11:01:46.982Z",
+    "updatedAt": "2026-03-24T11:40:40.379Z"
+  },
+  {
+    "studentId": "e556fa41-2b2b-4caf-9280-4969f6aea774",
+    "subject": "agile",
+    "date": "2026-03-25",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "present",
+    "_id": "f4c43f85-a91a-4f3a-b346-4a63518a3ef0",
+    "createdAt": "2026-03-24T11:01:46.985Z",
+    "updatedAt": "2026-03-24T11:40:50.330Z"
+  },
+  {
+    "studentId": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "subject": "agile",
+    "date": "2026-03-25",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "absent",
+    "_id": "37288fe1-05a7-414a-91ea-b1ef25146f90",
+    "createdAt": "2026-03-24T11:01:46.992Z",
+    "updatedAt": "2026-03-24T11:01:46.992Z"
+  },
+  {
+    "studentId": "b299a374-f8a1-4c7d-9c3a-ff5833f79fd8",
+    "subject": "agile",
+    "date": "2026-03-24",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "absent",
+    "_id": "c68a3afb-1785-45b2-9527-8df52f16a182",
+    "createdAt": "2026-03-24T11:04:15.313Z",
+    "updatedAt": "2026-03-24T11:19:56.347Z"
+  },
+  {
+    "studentId": "e556fa41-2b2b-4caf-9280-4969f6aea774",
+    "subject": "agile",
+    "date": "2026-03-24",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "absent",
+    "_id": "49df1095-b396-4f80-91c9-f967d9b7c091",
+    "createdAt": "2026-03-24T11:04:15.318Z",
+    "updatedAt": "2026-03-24T11:19:56.370Z"
+  },
+  {
+    "studentId": "a8017568-105d-4d6d-ad7a-26c3258708c5",
+    "subject": "agile",
+    "date": "2026-03-24",
+    "teacherId": "b66680c0-a110-49f9-a5cf-3d825f53bc95",
+    "status": "absent",
+    "_id": "23668935-847b-4165-bdd9-a733fc72e6f6",
+    "createdAt": "2026-03-24T11:04:15.322Z",
+    "updatedAt": "2026-03-24T11:19:56.374Z"
   }
 ]
