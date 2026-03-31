@@ -8,12 +8,12 @@
     "subject": "",
     "phone": "9202185737",
     "isActive": true,
-    "lastLogin": "2026-03-31T08:39:38.868Z",
+    "lastLogin": "2026-03-31T10:41:56.798Z",
     "resetToken": null,
     "resetTokenExpiry": null,
     "_id": "d30c76e9-1bde-4fa7-9d27-6c7222be60cb",
     "createdAt": "2026-03-21T18:37:04.894Z",
-    "updatedAt": "2026-03-31T08:39:38.868Z"
+    "updatedAt": "2026-03-31T10:41:56.799Z"
   },
   {
     "name": "Ankush Gurjwar",
@@ -72,8 +72,8 @@
     "isActive": true,
     "_id": "f476e702-de87-43b3-813b-24e2ef4b2764",
     "createdAt": "2026-03-22T19:02:36.792Z",
-    "updatedAt": "2026-03-24T08:46:11.994Z",
-    "lastLogin": "2026-03-24T08:46:11.993Z"
+    "updatedAt": "2026-03-31T10:42:46.719Z",
+    "lastLogin": "2026-03-31T10:42:46.718Z"
   },
   {
     "name": "Rahul",
