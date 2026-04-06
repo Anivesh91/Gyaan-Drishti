@@ -3,20 +3,91 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import API from "../../utils/api";
 
-const authCard = {
-  container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", padding: "20px" },
-  card: { background: "white", borderRadius: "16px", padding: "40px", width: "100%", maxWidth: "420px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" },
-  logo: { width: "52px", height: "52px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "white", fontSize: "18px", margin: "0 auto 12px" },
-  title: { fontSize: "22px", fontWeight: "800", color: "#1a1a2e", textAlign: "center", margin: "0 0 4px" },
-  sub: { fontSize: "13px", color: "#888", textAlign: "center", margin: "0 0 24px" },
-  label: { display: "block", fontSize: "13px", fontWeight: "600", color: "#4a5568", marginBottom: "5px" },
-  input: { width: "100%", padding: "11px 14px", border: "2px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box", marginBottom: "14px" },
-  btn: { width: "100%", padding: "13px", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "white", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: "700", cursor: "pointer", marginTop: "4px" },
-  err: { background: "#fff0f0", border: "1px solid #ffcccc", color: "#e53e3e", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", marginBottom: "14px" },
-  suc: { background: "#f0fff4", border: "1px solid #9ae6b4", color: "#276749", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", marginBottom: "14px" },
-  link: { color: "#667eea", fontWeight: "600", textDecoration: "none" },
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const BG = "#e8ecf0";
+const SHADOW_RAISED = "10px 10px 20px #c5cad2, -10px -10px 20px #ffffff";
+const SHADOW_SM = "5px 5px 12px #c5cad2, -5px -5px 12px #ffffff";
+const SHADOW_INSET = "inset 5px 5px 12px #c5cad2, inset -5px -5px 12px #ffffff";
+const SHADOW_BTN = "5px 5px 14px #c5cad2, -3px -3px 10px #ffffff";
+const ACCENT = "#667eea";
+const RADIUS = "16px";
+const RADIUS_SM = "12px";
+
+const neo = {
+  page: {
+    minHeight: "100vh",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    background: BG,
+    padding: "20px",
+  },
+  card: {
+    background: BG,
+    borderRadius: "24px",
+    padding: "44px 40px",
+    width: "100%", maxWidth: "420px",
+    boxShadow: SHADOW_RAISED,
+  },
+  logo: {
+    width: "60px", height: "60px",
+    background: "linear-gradient(135deg,#667eea,#764ba2)",
+    borderRadius: "18px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontWeight: "900", color: "white", fontSize: "20px",
+    margin: "0 auto 14px",
+    boxShadow: "6px 6px 14px rgba(102,126,234,0.4), -3px -3px 8px rgba(255,255,255,0.9)",
+  },
+  title: {
+    fontSize: "22px", fontWeight: "900", color: "#1a1d2e",
+    textAlign: "center", margin: "0 0 4px", letterSpacing: "0.3px",
+  },
+  sub: {
+    fontSize: "13px", color: "#636e72",
+    textAlign: "center", margin: "0 0 28px",
+  },
+  label: {
+    display: "block", fontSize: "12px", fontWeight: "700",
+    color: "#636e72", marginBottom: "7px", textTransform: "uppercase", letterSpacing: "0.6px",
+  },
+  inputWrap: { marginBottom: "18px" },
+  input: {
+    width: "100%", padding: "13px 16px",
+    background: BG, border: "none",
+    boxShadow: SHADOW_INSET,
+    borderRadius: RADIUS_SM,
+    fontSize: "14px", color: "#2d3436",
+    outline: "none", boxSizing: "border-box",
+  },
+  btn: {
+    width: "100%", padding: "14px",
+    background: "linear-gradient(135deg,#667eea,#764ba2)",
+    color: "white", border: "none",
+    borderRadius: RADIUS_SM,
+    fontSize: "15px", fontWeight: "800",
+    cursor: "pointer", marginTop: "6px",
+    boxShadow: "6px 6px 14px rgba(102,126,234,0.45), -3px -3px 8px rgba(255,255,255,0.9)",
+    letterSpacing: "0.3px",
+    transition: "all 0.2s ease",
+  },
+  err: {
+    background: BG,
+    boxShadow: "inset 3px 3px 8px rgba(229,62,62,0.15), inset -3px -3px 8px #ffffff",
+    borderLeft: "4px solid #e53e3e",
+    color: "#e53e3e", padding: "12px 16px",
+    borderRadius: RADIUS_SM, fontSize: "13px", marginBottom: "16px",
+    fontWeight: "600",
+  },
+  suc: {
+    background: BG,
+    boxShadow: "inset 3px 3px 8px rgba(72,187,120,0.15), inset -3px -3px 8px #ffffff",
+    borderLeft: "4px solid #48bb78",
+    color: "#276749", padding: "12px 16px",
+    borderRadius: RADIUS_SM, fontSize: "13px", marginBottom: "16px",
+    fontWeight: "600",
+  },
+  link: { color: ACCENT, fontWeight: "700", textDecoration: "none" },
 };
 
+// ── Login ─────────────────────────────────────────────────────────────────────
 export const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -27,7 +98,7 @@ export const Login = () => {
   const submit = async (e) => {
     e.preventDefault();
     setPending(false); setError("");
-    if (!form.email || !form.password) { setError("Fill all fields."); return; }
+    if (!form.email || !form.password) { setError("Please fill all fields."); return; }
     const res = await login(form.email, form.password);
     if (res.success) {
       if (res.user.role === "student") navigate("/student/dashboard");
@@ -41,136 +112,187 @@ export const Login = () => {
   };
 
   return (
-    <div style={authCard.container}>
-      <div style={authCard.card}>
-        <div style={authCard.logo}>GD</div>
-        <h1 style={authCard.title}>GYAAN DRISHTI</h1>
-        <p style={authCard.sub}>Student Performance Analytics System</p>
-        <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 4px" }}>Welcome Back 👋</h2>
-        <p style={{ ...authCard.sub, margin: "0 0 20px" }}>Login to your account</p>
-        {error && <div style={authCard.err}>{error}</div>}
+    <div style={neo.page}>
+      {/* Decorative blobs */}
+      <div style={{ position: "fixed", top: "-10%", left: "-5%", width: "320px", height: "320px", background: "radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "fixed", bottom: "-10%", right: "-5%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(118,75,162,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+      <div style={neo.card}>
+        <div style={neo.logo}>GD</div>
+        <h1 style={neo.title}>GYAAN DRISHTI</h1>
+        <p style={neo.sub}>Student Performance Analytics System</p>
+
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, transparent, #c5cad2)" }} />
+          <span style={{ fontSize: "13px", fontWeight: "700", color: "#636e72" }}>Welcome Back 👋</span>
+          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, transparent, #c5cad2)" }} />
+        </div>
+
+        {error && <div style={neo.err}>⚠️ {error}</div>}
+
         {pending && (
-          <div style={{ background: "#fffbeb", border: "1px solid #f6e05e", color: "#744210", padding: "14px", borderRadius: "10px", marginBottom: "14px", textAlign: "center" }}>
-            <div style={{ fontSize: "28px", marginBottom: "6px" }}>⏳</div>
-            <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>Account Pending Approval</div>
-            <div style={{ fontSize: "12px", opacity: 0.8 }}>Your registration is awaiting admin approval. You'll be able to login once approved.</div>
+          <div style={{
+            background: BG,
+            boxShadow: "inset 4px 4px 10px rgba(237,137,54,0.12), inset -4px -4px 10px #ffffff",
+            borderLeft: "4px solid #ed8936",
+            padding: "16px", borderRadius: RADIUS_SM, marginBottom: "16px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: "32px", marginBottom: "6px" }}>⏳</div>
+            <div style={{ fontWeight: "800", fontSize: "14px", color: "#744210", marginBottom: "4px" }}>Account Pending Approval</div>
+            <div style={{ fontSize: "12px", color: "#975a16", opacity: 0.9 }}>Your registration is awaiting admin approval.</div>
           </div>
         )}
+
         <form onSubmit={submit}>
-          <label style={authCard.label}>Email</label>
-          <input style={authCard.input} type="email" placeholder="Enter email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <label style={authCard.label}>Password</label>
-          <input style={authCard.input} type="password" placeholder="Enter password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-          <div style={{ textAlign: "right", marginTop: "-8px", marginBottom: "16px" }}>
-            <Link to="/forgot-password" style={authCard.link}>Forgot Password?</Link>
+          <div style={neo.inputWrap}>
+            <label style={neo.label}>Email</label>
+            <input style={neo.input} type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
-          <button style={authCard.btn} type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
+          <div style={neo.inputWrap}>
+            <label style={neo.label}>Password</label>
+            <input style={neo.input} type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+          </div>
+          <div style={{ textAlign: "right", marginTop: "-10px", marginBottom: "20px" }}>
+            <Link to="/forgot-password" style={{ ...neo.link, fontSize: "13px" }}>Forgot Password?</Link>
+          </div>
+          <button style={neo.btn} type="submit" disabled={loading}
+            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+          >{loading ? "Logging in..." : "Login →"}</button>
         </form>
-        <p style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "#666" }}>
-          No account? <Link to="/register" style={authCard.link}>Register</Link>
+
+        <p style={{ textAlign: "center", marginTop: "20px", fontSize: "14px", color: "#636e72" }}>
+          No account? <Link to="/register" style={neo.link}>Register</Link>
         </p>
       </div>
     </div>
   );
 };
 
+// ── Register ──────────────────────────────────────────────────────────────────
 export const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", role: "student", rollNumber: "", subject: "", phone: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [adminExists, setAdminExists] = useState(true); // assume true until checked
+  const [adminExists, setAdminExists] = useState(true);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if admin already exists to decide whether to show Admin option
     API.get("/auth/check-admin")
       .then(r => setAdminExists(r.data.adminExists))
-      .catch(() => setAdminExists(true)); // if error, be safe and hide admin option
+      .catch(() => setAdminExists(true));
   }, []);
 
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) { setError("Fill required fields."); return; }
     if (form.password !== form.confirmPassword) { setError("Passwords don't match."); return; }
-    if (form.password.length < 6) { setError("Password min 6 chars."); return; }
+    if (form.password.length < 6) { setError("Password min 6 characters."); return; }
     const res = await register(form);
     if (res.success) {
-      if (res.pending) {
-        // Approval mode ON — show pending message
-        setSuccess("pending");
-      } else {
-        // Open mode or admin — go to login directly
-        setSuccess("Registered successfully! Redirecting to login...");
-        setTimeout(() => navigate("/login"), 1500);
-      }
+      if (res.pending) setSuccess("pending");
+      else { setSuccess("Registered! Redirecting..."); setTimeout(() => navigate("/login"), 1500); }
     } else setError(res.message);
   };
 
+  const gridInput = { ...neo.input, marginBottom: 0 };
+
   return (
-    <div style={authCard.container}>
-      <div style={{ ...authCard.card, maxWidth: "460px" }}>
-        <div style={authCard.logo}>GD</div>
-        <h1 style={authCard.title}>Create Account 🎓</h1>
-        <p style={authCard.sub}>Join Gyaan Drishti today</p>
-        {error && <div style={authCard.err}>{error}</div>}
+    <div style={neo.page}>
+      <div style={{ position: "fixed", top: "-10%", right: "-5%", width: "320px", height: "320px", background: "radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "fixed", bottom: "-10%", left: "-5%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(118,75,162,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+      <div style={{ ...neo.card, maxWidth: "480px" }}>
+        <div style={neo.logo}>GD</div>
+        <h1 style={neo.title}>Create Account 🎓</h1>
+        <p style={neo.sub}>Join Gyaan Drishti today</p>
+
+        {error && <div style={neo.err}>⚠️ {error}</div>}
+
         {success === "pending" ? (
           <div style={{ textAlign: "center", padding: "10px 0" }}>
-            <div style={{ fontSize: "52px", marginBottom: "12px" }}>⏳</div>
-            <h3 style={{ margin: "0 0 8px", color: "#1a1a2e", fontSize: "17px" }}>Registration Submitted!</h3>
-            <p style={{ color: "#666", fontSize: "13px", lineHeight: "1.6", margin: "0 0 16px" }}>
+            <div style={{ fontSize: "56px", marginBottom: "14px" }}>⏳</div>
+            <h3 style={{ margin: "0 0 8px", color: "#1a1d2e", fontSize: "18px", fontWeight: "800" }}>Registration Submitted!</h3>
+            <p style={{ color: "#636e72", fontSize: "13px", lineHeight: "1.7", margin: "0 0 20px" }}>
               Your account is <strong>pending admin approval</strong>.<br />
-              You will be able to login once the admin approves your request.
+              You'll be notified once the admin approves your request.
             </p>
-            <Link to="/login" style={{ ...authCard.link, fontSize: "14px" }}>← Back to Login</Link>
+            <Link to="/login" style={{ ...neo.link, fontSize: "14px" }}>← Back to Login</Link>
           </div>
         ) : success ? (
-          <div style={authCard.suc}>{success}</div>
+          <div style={neo.suc}>✅ {success}</div>
         ) : (
-        <form onSubmit={submit}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
-            <div>
-              <label style={authCard.label}>Full Name *</label>
-              <input style={authCard.input} placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          <form onSubmit={submit}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
+              <div>
+                <label style={neo.label}>Full Name *</label>
+                <input style={gridInput} placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div>
+                <label style={neo.label}>Role *</label>
+                <select style={gridInput} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  {!adminExists && <option value="admin">Admin (First Setup)</option>}
+                </select>
+                {!adminExists && <p style={{ fontSize: "11px", color: "#ed8936", marginTop: "6px", fontWeight: "700" }}>⚠️ No admin found.</p>}
+              </div>
             </div>
-            <div>
-              <label style={authCard.label}>Role *</label>
-              <select style={authCard.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-                {/* Admin option only shown if no admin exists yet (first-time setup) */}
-                {!adminExists && <option value="admin">Admin (First Setup)</option>}
-              </select>
-              {!adminExists && (
-                <p style={{ fontSize: "11px", color: "#ed8936", marginTop: "-10px", marginBottom: "10px", fontWeight: "600" }}>
-                  ⚠️ No admin found. You can register as the system admin.
-                </p>
-              )}
+
+            <div style={neo.inputWrap}>
+              <label style={neo.label}>Email *</label>
+              <input style={neo.input} type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
-          </div>
-          <label style={authCard.label}>Email *</label>
-          <input style={authCard.input} type="email" placeholder="Email address" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          {form.role === "student" && <><label style={authCard.label}>Roll Number</label><input style={authCard.input} placeholder="Roll number" value={form.rollNumber} onChange={e => setForm({ ...form, rollNumber: e.target.value })} /></>}
-          {form.role === "teacher" && <><label style={authCard.label}>Subject</label><input style={authCard.input} placeholder="Your subject" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} /></>}
-          <label style={authCard.label}>Phone</label>
-          <input style={authCard.input} placeholder="Phone number" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
-            <div><label style={authCard.label}>Password *</label><input style={authCard.input} type="password" placeholder="Min 6 chars" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></div>
-            <div><label style={authCard.label}>Confirm *</label><input style={authCard.input} type="password" placeholder="Re-enter" value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} /></div>
-          </div>
-          <button style={authCard.btn} type="submit">Create Account</button>
-        </form>
+
+            {form.role === "student" && (
+              <div style={neo.inputWrap}>
+                <label style={neo.label}>Roll Number</label>
+                <input style={neo.input} placeholder="Roll number" value={form.rollNumber} onChange={e => setForm({ ...form, rollNumber: e.target.value })} />
+              </div>
+            )}
+            {form.role === "teacher" && (
+              <div style={neo.inputWrap}>
+                <label style={neo.label}>Subject</label>
+                <input style={neo.input} placeholder="Your subject" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
+              </div>
+            )}
+
+            <div style={neo.inputWrap}>
+              <label style={neo.label}>Phone</label>
+              <input style={neo.input} placeholder="Phone number" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
+              <div>
+                <label style={neo.label}>Password *</label>
+                <input style={gridInput} type="password" placeholder="Min 6 chars" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+              </div>
+              <div>
+                <label style={neo.label}>Confirm *</label>
+                <input style={gridInput} type="password" placeholder="Re-enter" value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
+              </div>
+            </div>
+
+            <button style={neo.btn} type="submit"
+              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+            >Create Account →</button>
+          </form>
         )}
+
         {!success && (
-        <p style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "#666" }}>
-          Have account? <Link to="/login" style={authCard.link}>Login</Link>
-        </p>
+          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "14px", color: "#636e72" }}>
+            Have account? <Link to="/login" style={neo.link}>Login</Link>
+          </p>
         )}
       </div>
     </div>
   );
 };
 
+// ── Forgot Password ───────────────────────────────────────────────────────────
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
@@ -184,24 +306,30 @@ export const ForgotPassword = () => {
   };
 
   return (
-    <div style={authCard.container}>
-      <div style={{ ...authCard.card, textAlign: "center" }}>
-        <div style={authCard.logo}>🔐</div>
-        <h2 style={authCard.title}>Forgot Password?</h2>
-        <p style={authCard.sub}>Enter your email to get a reset link</p>
-        {msg && <div style={authCard.suc}>{msg}</div>}
-        {err && <div style={authCard.err}>{err}</div>}
+    <div style={neo.page}>
+      <div style={{ ...neo.card, textAlign: "center" }}>
+        <div style={neo.logo}>🔐</div>
+        <h2 style={neo.title}>Forgot Password?</h2>
+        <p style={neo.sub}>Enter your email to get a reset link</p>
+        {msg && <div style={neo.suc}>{msg}</div>}
+        {err && <div style={neo.err}>{err}</div>}
         <form onSubmit={submit}>
-          <label style={{ ...authCard.label, textAlign: "left" }}>Email Address</label>
-          <input style={authCard.input} type="email" placeholder="Registered email" value={email} onChange={e => setEmail(e.target.value)} />
-          <button style={authCard.btn} type="submit" disabled={loading}>{loading ? "Sending..." : "Send Reset Link"}</button>
+          <div style={{ ...neo.inputWrap, textAlign: "left" }}>
+            <label style={neo.label}>Email Address</label>
+            <input style={neo.input} type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <button style={neo.btn} type="submit" disabled={loading}
+            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+          >{loading ? "Sending..." : "Send Reset Link"}</button>
         </form>
-        <Link to="/login" style={{ ...authCard.link, display: "block", marginTop: "16px", fontSize: "14px" }}>← Back to Login</Link>
+        <Link to="/login" style={{ ...neo.link, display: "block", marginTop: "20px", fontSize: "14px" }}>← Back to Login</Link>
       </div>
     </div>
   );
 };
 
+// ── Reset Password ────────────────────────────────────────────────────────────
 export const ResetPassword = () => {
   const [form, setForm] = useState({ password: "", confirm: "" });
   const [msg, setMsg] = useState("");
@@ -219,19 +347,26 @@ export const ResetPassword = () => {
   };
 
   return (
-    <div style={authCard.container}>
-      <div style={{ ...authCard.card, textAlign: "center" }}>
-        <div style={authCard.logo}>🔑</div>
-        <h2 style={authCard.title}>Reset Password</h2>
-        <p style={authCard.sub}>Enter your new password</p>
-        {msg && <div style={authCard.suc}>{msg}</div>}
-        {err && <div style={authCard.err}>{err}</div>}
+    <div style={neo.page}>
+      <div style={{ ...neo.card, textAlign: "center" }}>
+        <div style={neo.logo}>🔑</div>
+        <h2 style={neo.title}>Reset Password</h2>
+        <p style={neo.sub}>Enter your new password</p>
+        {msg && <div style={neo.suc}>{msg}</div>}
+        {err && <div style={neo.err}>{err}</div>}
         <form onSubmit={submit}>
-          <label style={{ ...authCard.label, textAlign: "left" }}>New Password</label>
-          <input style={authCard.input} type="password" placeholder="Min 6 chars" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-          <label style={{ ...authCard.label, textAlign: "left" }}>Confirm Password</label>
-          <input style={authCard.input} type="password" placeholder="Re-enter" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} />
-          <button style={authCard.btn} type="submit">Reset Password</button>
+          <div style={{ ...neo.inputWrap, textAlign: "left" }}>
+            <label style={neo.label}>New Password</label>
+            <input style={neo.input} type="password" placeholder="Min 6 characters" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+          </div>
+          <div style={{ ...neo.inputWrap, textAlign: "left" }}>
+            <label style={neo.label}>Confirm Password</label>
+            <input style={neo.input} type="password" placeholder="Re-enter password" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} />
+          </div>
+          <button style={neo.btn} type="submit"
+            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+          >Reset Password</button>
         </form>
       </div>
     </div>
