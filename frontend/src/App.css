@@ -1,8 +1,72 @@
+/* ═══════════════════════════════════════════════
+   GYAAN DRISHTI — Neomorphism Design System
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --bg: #e8ecf0;
+  --bg-dark: #1a1d2e;
+  --shadow-raised: 8px 8px 18px #c5cad2, -8px -8px 18px #ffffff;
+  --shadow-raised-sm: 4px 4px 10px #c5cad2, -4px -4px 10px #ffffff;
+  --shadow-inset: inset 5px 5px 12px #c5cad2, inset -5px -5px 12px #ffffff;
+  --shadow-inset-sm: inset 3px 3px 7px #c5cad2, inset -3px -3px 7px #ffffff;
+  --accent: #667eea;
+  --accent2: #764ba2;
+  --accent-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --text: #2d3436;
+  --subtext: #636e72;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
-input:focus, select:focus, textarea:focus { border-color: #667eea !important; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-button:hover { opacity: 0.9; }
-a:hover { opacity: 0.8; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #667eea; border-radius: 3px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Inputs */
+input, select, textarea {
+  background: var(--bg) !important;
+  border: none !important;
+  box-shadow: var(--shadow-inset-sm) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: inherit;
+  transition: box-shadow 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: inset 5px 5px 12px #b8bdc5, inset -5px -5px 12px #ffffff, 0 0 0 2px rgba(102,126,234,0.3) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+}
+
+/* Neomorphism utility classes */
+.neo-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-raised);
+}
+
+.neo-inset {
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-inset);
+}
+
+/* Smooth transitions */
+button, a { transition: all 0.2s ease; }
+button:hover { transform: translateY(-1px); }
+button:active { transform: translateY(0px); }
+a:hover { opacity: 0.85; }

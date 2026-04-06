@@ -3,6 +3,20 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const BG = "#e8ecf0";
+const SHADOW_RAISED = "8px 8px 18px #c5cad2, -8px -8px 18px #ffffff";
+const SHADOW_SM = "4px 4px 10px #c5cad2, -4px -4px 10px #ffffff";
+const SHADOW_INSET = "inset 4px 4px 10px #c5cad2, inset -4px -4px 10px #ffffff";
+const ACCENT = "#667eea";
+const ACCENT2 = "#764ba2";
+const RADIUS = "16px";
+
+// Dark sidebar tokens
+const SIDEBAR_BG = "#1a1d2e";
+const SIDEBAR_ITEM_ACTIVE_BG = "rgba(102,126,234,0.18)";
+const SIDEBAR_ITEM_ACTIVE_SHADOW = "inset 3px 3px 8px rgba(0,0,0,0.35), inset -2px -2px 6px rgba(255,255,255,0.04)";
+
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -22,121 +36,224 @@ const Layout = ({ children }) => {
   }, [user]);
 
   const fetchUnread = async () => {
-    try {
-      const res = await API.get("/notifications");
-      setUnread(res.data.unread);
-    } catch {}
+    try { const res = await API.get("/notifications"); setUnread(res.data.unread); } catch {}
   };
 
   const fetchPending = async () => {
-    try {
-      const res = await API.get("/users/pending");
-      setPendingCount(res.data.count || 0);
-    } catch {}
+    try { const res = await API.get("/users/pending"); setPendingCount(res.data.count || 0); } catch {}
   };
 
   const handleLogout = () => { logout(); navigate("/login"); };
 
   const studentLinks = [
-    { path: "/student/dashboard", label: "🏠 Dashboard" },
-    { path: "/student/attendance", label: "📅 My Attendance" },
-    { path: "/student/marks", label: "📝 My Marks" },
-    { path: "/student/notifications", label: "🔔 Notifications" },
-    { path: "/student/profile", label: "👤 Profile" },
+    { path: "/student/dashboard", label: "🏠", text: "Dashboard" },
+    { path: "/student/attendance", label: "📅", text: "My Attendance" },
+    { path: "/student/marks", label: "📝", text: "My Marks" },
+    { path: "/student/notifications", label: "🔔", text: "Notifications" },
+    { path: "/student/profile", label: "👤", text: "Profile" },
   ];
 
   const teacherLinks = [
-    { path: "/teacher/dashboard", label: "🏠 Dashboard" },
-    { path: "/teacher/mark-attendance", label: "📅 Mark Attendance" },
-    { path: "/teacher/attendance", label: "📋 View Attendance" },
-    { path: "/teacher/enter-marks", label: "📝 Enter Marks" },
-    { path: "/teacher/marks", label: "📊 View Marks" },
-    { path: "/teacher/announcements", label: "📢 Announcements" },
-    { path: "/teacher/profile", label: "👤 Profile" },
+    { path: "/teacher/dashboard", label: "🏠", text: "Dashboard" },
+    { path: "/teacher/mark-attendance", label: "📅", text: "Mark Attendance" },
+    { path: "/teacher/attendance", label: "📋", text: "View Attendance" },
+    { path: "/teacher/enter-marks", label: "📝", text: "Enter Marks" },
+    { path: "/teacher/marks", label: "📊", text: "View Marks" },
+    { path: "/teacher/announcements", label: "📢", text: "Announcements" },
+    { path: "/teacher/profile", label: "👤", text: "Profile" },
   ];
 
   const adminLinks = [
-    { path: "/admin/dashboard", label: "🏠 Dashboard" },
-    { path: "/admin/pending", label: "⏳ Pending Approvals", badge: pendingCount },
-    { path: "/admin/users", label: "👥 Manage Users" },
-    { path: "/admin/add-user", label: "➕ Add User" },
-    { path: "/admin/announcements", label: "📢 Announcements" },
-    { path: "/admin/profile", label: "👤 Profile" },
+    { path: "/admin/dashboard", label: "🏠", text: "Dashboard" },
+    { path: "/admin/pending", label: "⏳", text: "Pending Approvals", badge: pendingCount },
+    { path: "/admin/users", label: "👥", text: "Manage Users" },
+    { path: "/admin/add-user", label: "➕", text: "Add User" },
+    { path: "/admin/announcements", label: "📢", text: "Announcements" },
+    { path: "/admin/profile", label: "👤", text: "Profile" },
   ];
 
   const links = user?.role === "student" ? studentLinks : user?.role === "teacher" ? teacherLinks : adminLinks;
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f7fafc" }}>
-      {/* Sidebar */}
-      <div style={{ width: sidebarOpen ? "240px" : "0", background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)", transition: "width 0.3s", overflow: "hidden", flexShrink: 0 }}>
-        <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "36px", height: "36px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "white", fontSize: "14px" }}>GD</div>
+    <div style={{ display: "flex", minHeight: "100vh", background: BG }}>
+
+      {/* ── Sidebar ───────────────────────────────────────────────────────── */}
+      <div style={{
+        width: sidebarOpen ? "248px" : "0",
+        background: SIDEBAR_BG,
+        transition: "width 0.35s cubic-bezier(0.4,0,0.2,1)",
+        overflow: "hidden",
+        flexShrink: 0,
+        position: "relative",
+        boxShadow: "6px 0 24px rgba(0,0,0,0.25)",
+        zIndex: 10,
+      }}>
+        {/* Logo */}
+        <div style={{ padding: "24px 20px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              width: "42px", height: "42px",
+              background: "linear-gradient(135deg,#667eea,#764ba2)",
+              borderRadius: "12px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: "900", color: "white", fontSize: "15px",
+              boxShadow: "0 4px 14px rgba(102,126,234,0.5)",
+              flexShrink: 0,
+            }}>GD</div>
             <div>
-              <div style={{ color: "white", fontWeight: "800", fontSize: "14px" }}>GYAAN DRISHTI</div>
-              <div style={{ color: "#888", fontSize: "11px", textTransform: "capitalize" }}>{user?.role}</div>
+              <div style={{ color: "white", fontWeight: "800", fontSize: "13px", letterSpacing: "0.5px" }}>GYAAN DRISHTI</div>
+              <div style={{
+                color: ACCENT, fontSize: "11px", fontWeight: "700",
+                textTransform: "uppercase", letterSpacing: "1px",
+                background: "rgba(102,126,234,0.15)",
+                padding: "2px 8px", borderRadius: "20px", marginTop: "3px",
+                display: "inline-block",
+              }}>{user?.role}</div>
             </div>
           </div>
         </div>
-        <nav style={{ padding: "16px 8px" }}>
-          {links.map(link => (
-            <Link key={link.path} to={link.path} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 12px", borderRadius: "8px", marginBottom: "4px",
-              color: location.pathname === link.path ? "white" : "#aaa",
-              background: location.pathname === link.path ? "rgba(102,126,234,0.3)" : "transparent",
-              textDecoration: "none", fontSize: "13px", fontWeight: "600",
-              borderLeft: location.pathname === link.path ? "3px solid #667eea" : "3px solid transparent",
-            }}>
-              <span>
-                {link.label}
-                {link.label.includes("Notifications") && unread > 0 && (
-                  <span style={{ background: "#e53e3e", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "6px" }}>{unread}</span>
+
+        {/* Nav */}
+        <nav style={{ padding: "16px 12px" }}>
+          {links.map(link => {
+            const active = isActive(link.path);
+            return (
+              <Link key={link.path} to={link.path} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "11px 14px", borderRadius: "12px", marginBottom: "6px",
+                color: active ? "white" : "rgba(255,255,255,0.55)",
+                background: active ? SIDEBAR_ITEM_ACTIVE_BG : "transparent",
+                boxShadow: active ? SIDEBAR_ITEM_ACTIVE_SHADOW : "none",
+                textDecoration: "none", fontSize: "13.5px", fontWeight: active ? "700" : "500",
+                borderLeft: `3px solid ${active ? ACCENT : "transparent"}`,
+                transition: "all 0.2s ease",
+              }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "16px" }}>{link.label}</span>
+                  <span>{link.text}</span>
+                  {link.text === "Notifications" && unread > 0 && (
+                    <span style={{
+                      background: "#e53e3e", color: "white",
+                      borderRadius: "10px", padding: "1px 6px",
+                      fontSize: "10px", fontWeight: "800",
+                      boxShadow: "0 2px 6px rgba(229,62,62,0.5)",
+                    }}>{unread}</span>
+                  )}
+                </span>
+                {link.badge > 0 && (
+                  <span style={{
+                    background: "linear-gradient(135deg,#ed8936,#dd6b20)",
+                    color: "white", borderRadius: "10px", padding: "2px 8px",
+                    fontSize: "10px", fontWeight: "800",
+                    boxShadow: "0 2px 6px rgba(237,137,54,0.5)",
+                  }}>{link.badge}</span>
                 )}
-              </span>
-              {/* Pending approvals badge */}
-              {link.badge > 0 && (
-                <span style={{ background: "#ed8936", color: "white", borderRadius: "10px", padding: "1px 7px", fontSize: "10px", fontWeight: "800", flexShrink: 0 }}>{link.badge}</span>
-              )}
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </nav>
-        <div style={{ padding: "16px", position: "absolute", bottom: 0, width: "208px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+
+        {/* User Footer */}
+        <div style={{
+          padding: "16px 16px 20px",
+          position: "absolute", bottom: 0,
+          width: "248px",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          background: SIDEBAR_BG,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
             {user?.avatar
-              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid #667eea" }} />
-              : <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "12px", fontWeight: "700", flexShrink: 0 }}>{user?.name?.[0]?.toUpperCase()}</div>
+              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "34px", height: "34px", borderRadius: "50%", objectFit: "cover", border: `2px solid ${ACCENT}`, boxShadow: `0 0 8px rgba(102,126,234,0.4)` }} />
+              : <div style={{
+                  width: "34px", height: "34px",
+                  background: "linear-gradient(135deg,#667eea,#764ba2)",
+                  borderRadius: "50%", display: "flex", alignItems: "center",
+                  justifyContent: "center", color: "white", fontSize: "14px",
+                  fontWeight: "800", flexShrink: 0,
+                  boxShadow: "0 0 10px rgba(102,126,234,0.4)",
+                }}>{user?.name?.[0]?.toUpperCase()}</div>
             }
-            <span style={{ color: "#aaa", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.name}</span>
+            <div style={{ overflow: "hidden" }}>
+              <div style={{ color: "white", fontSize: "13px", fontWeight: "700", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.name}</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px" }}>Logged in</div>
+            </div>
           </div>
-          <button onClick={handleLogout} style={{ width: "100%", padding: "8px", background: "rgba(229,62,62,0.2)", border: "1px solid rgba(229,62,62,0.4)", color: "#fc8181", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
-            🚪 Logout
-          </button>
+          <button onClick={handleLogout} style={{
+            width: "100%", padding: "10px",
+            background: "rgba(229,62,62,0.12)",
+            border: "1px solid rgba(229,62,62,0.25)",
+            color: "#fc8181", borderRadius: "10px",
+            cursor: "pointer", fontSize: "13px", fontWeight: "700",
+            letterSpacing: "0.3px",
+            transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,62,62,0.22)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,62,62,0.12)"; e.currentTarget.style.transform = "translateY(0)"; }}
+          >🚪 Logout</button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* ── Main Content ──────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: BG }}>
+
         {/* Topbar */}
-        <div style={{ background: "white", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 10px rgba(0,0,0,0.08)" }}>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", padding: "4px" }}>☰</button>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{
+          background: BG,
+          padding: "0 28px",
+          height: "64px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
+          position: "relative", zIndex: 5,
+        }}>
+          {/* Hamburger */}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
+            background: BG,
+            border: "none",
+            width: "42px", height: "42px",
+            borderRadius: "12px",
+            boxShadow: SHADOW_SM,
+            cursor: "pointer", fontSize: "18px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "box-shadow 0.2s",
+          }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = SHADOW_INSET}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = SHADOW_SM}
+          >☰</button>
+
+          {/* Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             {user?.role === "admin" && pendingCount > 0 && (
-              <Link to="/admin/pending" style={{ background: "#ed8936", color: "white", padding: "4px 12px", borderRadius: "12px", fontSize: "12px", fontWeight: "700", textDecoration: "none" }}>
-                ⏳ {pendingCount} Pending
-              </Link>
+              <Link to="/admin/pending" style={{
+                background: "linear-gradient(135deg,#ed8936,#dd6b20)",
+                color: "white", padding: "6px 14px", borderRadius: "20px",
+                fontSize: "12px", fontWeight: "700", textDecoration: "none",
+                boxShadow: "0 4px 12px rgba(237,137,54,0.4)",
+              }}>⏳ {pendingCount} Pending</Link>
             )}
-            <span style={{ background: "#667eea", color: "white", padding: "3px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>{user?.role}</span>
-            <span style={{ fontSize: "14px", fontWeight: "600", color: "#4a5568" }}>{user?.name}</span>
+            <span style={{
+              background: "linear-gradient(135deg,#667eea,#764ba2)",
+              color: "white", padding: "5px 12px", borderRadius: "20px",
+              fontSize: "11px", fontWeight: "800", textTransform: "uppercase",
+              letterSpacing: "0.8px",
+              boxShadow: "0 4px 12px rgba(102,126,234,0.35)",
+            }}>{user?.role}</span>
+            <span style={{ fontSize: "14px", fontWeight: "700", color: "#2d3436" }}>{user?.name}</span>
             {user?.avatar
-              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", border: "2px solid #667eea" }} />
-              : <div style={{ width: "32px", height: "32px", background: "linear-gradient(135deg,#667eea,#764ba2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "13px", fontWeight: "700" }}>{user?.name?.[0]?.toUpperCase()}</div>
+              ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover", border: `2px solid ${ACCENT}`, boxShadow: SHADOW_SM }} />
+              : <div style={{
+                  width: "38px", height: "38px",
+                  background: "linear-gradient(135deg,#667eea,#764ba2)",
+                  borderRadius: "50%", display: "flex", alignItems: "center",
+                  justifyContent: "center", color: "white", fontSize: "15px", fontWeight: "800",
+                  boxShadow: "0 4px 14px rgba(102,126,234,0.4)",
+                }}>{user?.name?.[0]?.toUpperCase()}</div>
             }
           </div>
         </div>
+
         {/* Page Content */}
-        <div style={{ flex: 1, overflow: "auto", padding: "24px" }}>
+        <div style={{ flex: 1, overflow: "auto", padding: "28px" }}>
           {children}
         </div>
       </div>
