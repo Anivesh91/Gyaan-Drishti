@@ -1,21 +1,25 @@
-const db = require("../db");
+const Marks = require("../models/Marks");
+const User = require("../models/User");
+const Notification = require("../models/Notification");
 const XLSX = require("xlsx");
 
-exports.bulkEnterMarks = (req, res) => {
+exports.bulkEnterMarks = async (req, res) => {
   try {
     const { records, subject, examType, maxMarks } = req.body;
+    const max = maxMarks || 100;
     const results = [];
     for (const rec of records) {
       if (rec.marks === "" || rec.marks === undefined) continue;
-      const entry = db.findOneAndUpdate("marks",
+      const entry = await Marks.findOneAndUpdate(
         { studentId: rec.studentId, subject, examType },
-        { studentId: rec.studentId, teacherId: req.user._id, subject, examType, marks: Number(rec.marks), maxMarks: maxMarks || 100 },
-        { upsert: true }
+        { studentId: rec.studentId, teacherId: req.user._id, subject, examType, marks: Number(rec.marks), maxMarks: max },
+        { upsert: true, new: true }
       );
       results.push(entry);
-      db.create("notifications", {
-        userId: rec.studentId, title: "Marks Updated 📝",
-        message: `${examType} marks for ${subject}: ${rec.marks}/${maxMarks || 100}`,
+      await Notification.create({
+        userId: rec.studentId,
+        title: "Marks Updated 📝",
+        message: `${examType} marks for ${subject}: ${rec.marks}/${max}`,
         type: "marks", isRead: false, createdById: req.user._id
       });
     }
@@ -24,28 +28,16 @@ exports.bulkEnterMarks = (req, res) => {
 };
 
 // ─── EXCEL TEMPLATE DOWNLOAD ────────────────────────────────────────────────
-exports.downloadExcelTemplate = (req, res) => {
+exports.downloadExcelTemplate = async (req, res) => {
   try {
-    const students = db.findAll("users", { role: "student", isActive: true });
-
-    // Build rows: header + one row per student
-    const rows = [
-      ["Roll Number", "Student Name", "Marks"]
-    ];
-    students.forEach(s => {
-      rows.push([s.rollNumber || "", s.name, ""]);
-    });
-
+    const students = await User.find({ role: "student", isActive: true }).select("name rollNumber");
+    const rows = [["Roll Number", "Student Name", "Marks"]];
+    students.forEach(s => rows.push([s.rollNumber || "", s.name, ""]));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Column widths
     ws["!cols"] = [{ wch: 15 }, { wch: 25 }, { wch: 10 }];
-
     XLSX.utils.book_append_sheet(wb, ws, "Marks");
-
     const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-
     res.setHeader("Content-Disposition", "attachment; filename=marks_template.xlsx");
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.send(buf);
@@ -53,90 +45,55 @@ exports.downloadExcelTemplate = (req, res) => {
 };
 
 // ─── EXCEL UPLOAD & PARSE ────────────────────────────────────────────────────
-exports.uploadExcelMarks = (req, res) => {
+exports.uploadExcelMarks = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded." });
-
     const { subject, examType, maxMarks } = req.body;
     if (!subject || !examType) return res.status(400).json({ success: false, message: "Subject and exam type are required." });
-
     const max = Number(maxMarks) || 100;
 
-    // Parse Excel from buffer
     const wb = XLSX.read(req.file.buffer, { type: "buffer" });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+    if (rows.length < 2) return res.status(400).json({ success: false, message: "Excel file is empty." });
 
-    if (rows.length < 2) return res.status(400).json({ success: false, message: "Excel file is empty or has no data rows." });
-
-    // Detect header row — find which columns are Roll Number, Name, Marks
     const header = rows[0].map(h => String(h).toLowerCase().trim());
     const rollIdx = header.findIndex(h => h.includes("roll"));
     const nameIdx = header.findIndex(h => h.includes("name"));
     const marksIdx = header.findIndex(h => h.includes("mark"));
+    if (marksIdx === -1) return res.status(400).json({ success: false, message: "Could not find 'Marks' column." });
 
-    if (marksIdx === -1) return res.status(400).json({ success: false, message: "Could not find 'Marks' column in Excel. Make sure your header says 'Marks'." });
+    const allStudents = await User.find({ role: "student", isActive: true });
+    const saved = [], skipped = [], notFound = [];
 
-    const allStudents = db.findAll("users", { role: "student", isActive: true });
-
-    const saved = [];
-    const skipped = [];
-    const notFound = [];
-
-    // Process each data row (skip header)
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const rollVal = rollIdx !== -1 ? String(row[rollIdx] || "").trim() : "";
       const nameVal = nameIdx !== -1 ? String(row[nameIdx] || "").trim() : "";
       const marksVal = row[marksIdx];
 
-      // Skip completely empty rows
       if (!rollVal && !nameVal) continue;
-
-      // Validate marks value
-      if (marksVal === "" || marksVal === null || marksVal === undefined) {
-        skipped.push({ roll: rollVal, name: nameVal, reason: "Marks cell is empty" });
-        continue;
-      }
+      if (marksVal === "" || marksVal === null || marksVal === undefined) { skipped.push({ roll: rollVal, name: nameVal, reason: "Marks cell is empty" }); continue; }
       const marksNum = Number(marksVal);
-      if (isNaN(marksNum)) {
-        skipped.push({ roll: rollVal, name: nameVal, reason: `Invalid marks value: "${marksVal}"` });
-        continue;
-      }
-      if (marksNum < 0 || marksNum > max) {
-        skipped.push({ roll: rollVal, name: nameVal, reason: `Marks ${marksNum} out of range (0–${max})` });
-        continue;
-      }
+      if (isNaN(marksNum)) { skipped.push({ roll: rollVal, name: nameVal, reason: `Invalid marks: "${marksVal}"` }); continue; }
+      if (marksNum < 0 || marksNum > max) { skipped.push({ roll: rollVal, name: nameVal, reason: `Out of range (0–${max})` }); continue; }
 
-      // Match student — roll number first, then name
       let student = null;
-      if (rollVal) {
-        student = allStudents.find(s => s.rollNumber && s.rollNumber.toLowerCase() === rollVal.toLowerCase());
-      }
-      if (!student && nameVal) {
-        student = allStudents.find(s => s.name.toLowerCase() === nameVal.toLowerCase());
-      }
+      if (rollVal) student = allStudents.find(s => s.rollNumber && s.rollNumber.toLowerCase() === rollVal.toLowerCase());
+      if (!student && nameVal) student = allStudents.find(s => s.name.toLowerCase() === nameVal.toLowerCase());
+      if (!student) { notFound.push({ roll: rollVal, name: nameVal, reason: "No matching student" }); continue; }
 
-      if (!student) {
-        notFound.push({ roll: rollVal, name: nameVal, reason: "No matching student found" });
-        continue;
-      }
-
-      // Save marks
-      db.findOneAndUpdate("marks",
+      await Marks.findOneAndUpdate(
         { studentId: student._id, subject, examType },
         { studentId: student._id, teacherId: req.user._id, subject, examType, marks: marksNum, maxMarks: max },
-        { upsert: true }
+        { upsert: true, new: true }
       );
-
-      // Notify student
-      db.create("notifications", {
+      await Notification.create({
         userId: student._id,
         title: "Marks Updated 📝",
         message: `${examType} marks for ${subject}: ${marksNum}/${max}`,
         type: "marks", isRead: false, createdById: req.user._id
       });
-
       saved.push({ name: student.name, roll: student.rollNumber, marks: marksNum });
     }
 
@@ -149,32 +106,31 @@ exports.uploadExcelMarks = (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
-exports.updateMarks = (req, res) => {
-  const entry = db.updateById("marks", req.params.id, { marks: Number(req.body.marks) });
+exports.updateMarks = async (req, res) => {
+  const entry = await Marks.findByIdAndUpdate(req.params.id, { marks: Number(req.body.marks) }, { new: true });
   if (!entry) return res.status(404).json({ success: false, message: "Record not found." });
   res.status(200).json({ success: true, message: "Updated!", entry });
 };
 
-exports.getMarksTeacher = (req, res) => {
+exports.getMarksTeacher = async (req, res) => {
   try {
     const { subject, examType } = req.query;
-    let marks = db.findAll("marks", { teacherId: req.user._id });
-    if (subject) marks = marks.filter(m => m.subject === subject);
-    if (examType) marks = marks.filter(m => m.examType === examType);
-    marks = marks.map(m => {
-      const student = db.findById("users", m.studentId);
-      return { ...m, student: student ? { name: student.name, rollNumber: student.rollNumber } : null };
-    });
-    res.status(200).json({ success: true, marks });
+    const query = { teacherId: req.user._id };
+    if (subject) query.subject = subject;
+    if (examType) query.examType = examType;
+    const marks = await Marks.find(query).populate("studentId", "name rollNumber");
+    const formatted = marks.map(m => ({ ...m.toObject(), student: m.studentId }));
+    res.status(200).json({ success: true, marks: formatted });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
-exports.getClassSummary = (req, res) => {
+exports.getClassSummary = async (req, res) => {
   try {
     const { subject, examType } = req.query;
-    let marks = db.findAll("marks", { teacherId: req.user._id });
-    if (subject) marks = marks.filter(m => m.subject === subject);
-    if (examType) marks = marks.filter(m => m.examType === examType);
+    const query = { teacherId: req.user._id };
+    if (subject) query.subject = subject;
+    if (examType) query.examType = examType;
+    const marks = await Marks.find(query);
     const total = marks.length;
     const avg = total > 0 ? parseFloat((marks.reduce((a, b) => a + b.marks, 0) / total).toFixed(1)) : 0;
     const highest = total > 0 ? Math.max(...marks.map(m => m.marks)) : 0;
@@ -183,9 +139,9 @@ exports.getClassSummary = (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };
 
-exports.getMyMarks = (req, res) => {
+exports.getMyMarks = async (req, res) => {
   try {
-    const records = db.findAll("marks", { studentId: req.user._id });
+    const records = await Marks.find({ studentId: req.user._id });
     const subjects = [...new Set(records.map(r => r.subject))];
     const summary = subjects.map(sub => {
       const subRecs = records.filter(r => r.subject === sub);
